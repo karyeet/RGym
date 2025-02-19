@@ -1,0 +1,6 @@
+services:
+  build-kernel:
+    image: build-kernel
+    build:
+      context: .
+      dockerfile: Build.Dockerfile
