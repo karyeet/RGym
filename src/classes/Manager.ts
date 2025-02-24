@@ -6,7 +6,7 @@ class Manager {
   private jobs: Job[] = [];
   private jobid = 0;
 
-  submitJob(jobType: JobType, options: JobOptions) {
+  submitJob(jobType: JobType, options: JobOptions): number {
     let job: Job;
     switch (jobType) {
       case 'build': {
@@ -24,11 +24,11 @@ class Manager {
     this.jobid++;
     return job.jobid;
   }
-  getJob(jobid: number) {
+  getJob(jobid: number): Job | undefined {
     return this.jobs.find(job => job.jobid === jobid);
   }
 
-  startJob(jobid: number) {
+  startJob(jobid: number): void {
     const job = this.jobs.find(job => job.jobid === jobid);
     if (job) {
       job.start();
@@ -37,7 +37,7 @@ class Manager {
     }
   }
 
-  getJobLogs(jobid: number) {
+  getJobLogs(jobid: number): string {
     const job = this.jobs.find(job => job.jobid === jobid);
     if (job) {
       return job.getLogs();
@@ -46,7 +46,7 @@ class Manager {
     }
   }
 
-  isJobComplete(jobid: number) {
+  isJobComplete(jobid: number): boolean {
     const job = this.jobs.find(job => job.jobid === jobid);
     if (job) {
       return job.isComplete();
@@ -55,7 +55,7 @@ class Manager {
     }
   }
 
-  isJobSuccess(jobid: number) {
+  isJobSuccess(jobid: number): boolean {
     const job = this.jobs.find(job => job.jobid === jobid);
     if (job) {
       return job.isSuccess();
