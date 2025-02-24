@@ -1,16 +1,17 @@
+import {createWriteStream} from 'fs';
 import {Job, JobOptions} from './Job';
 
 interface ReproducerOptions extends JobOptions {
   bzImagePath: string;
   rootfsPath: string;
-  cores: number;
   memory: number;
   boot_options: string;
 }
 
 class ReproducerJob extends Job {
   constructor(jobid: number, options: ReproducerOptions) {
-    super(jobid);
+    const logStream = createWriteStream(`./${jobid}/reproducer.log`);
+    super(jobid, options, logStream);
     this.setOptions(options);
   }
   getLogs(): string {
