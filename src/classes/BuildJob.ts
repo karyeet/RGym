@@ -55,13 +55,15 @@ class BuildJob extends Job {
     //  this.logStream.write(data);
     //  console.log(data.toString());
     //});
-    process.stdout.pipe(this.logStream);
+    process.stdout.pipe(this.logStream, {end: false});
+    process.stderr.pipe(this.logStream, {end: false});
 
     this.started = true;
 
     process.on('exit', (code, _) => {
       this.complete = true;
       this.success = code === 0;
+      this.logStream.end();
       console.log('build exited with code', code);
     });
     return true;
