@@ -3,4 +3,10 @@ services:
     image: build-kernel
     build:
       context: .
-      dockerfile: Build.Dockerfile
+      dockerfile: ./build-kernel/Build.Dockerfile
+
+  build-dummy:
+    image: build-dummy
+    build:
+      context: .
+      dockerfile: ./build-dummy/Dummy.Dockerfile
