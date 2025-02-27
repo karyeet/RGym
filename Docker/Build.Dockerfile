@@ -1,4 +1,4 @@
-FROM debian:bullseye
+FROM debian:bookworm
 
 # Install the required packages
 RUN apt update && apt install --no-install-recommends -y gcc make bison flex libelf-dev libssl-dev bc git python3 openssl findutils
