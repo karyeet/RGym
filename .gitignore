@@ -3,3 +3,4 @@ build
 .config
 build.log
 make.log
+bzImage-*

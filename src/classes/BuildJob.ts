@@ -21,7 +21,6 @@ class BuildJob extends Job {
     writeFileSync(`./${jobid}/.config`, options.kernel_config);
     super(jobid, options, logStream);
     if (options.patch) {
-      //const patch_hash = createHash('sha256').update(options.patch).digest('hex');
       writeFileSync(`./${jobid}/.patch`, options.patch);
     }
   }
