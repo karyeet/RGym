@@ -2,11 +2,17 @@ services:
   build-kernel:
     image: build-kernel
     build:
-      context: .
-      dockerfile: ./build-kernel/Build.Dockerfile
+      context: ./build-kernel
+      dockerfile: ./Build.Dockerfile
 
   build-dummy:
     image: build-dummy
     build:
-      context: .
-      dockerfile: ./build-dummy/Dummy.Dockerfile
+      context: ./build-dummy
+      dockerfile: ./Dummy.Dockerfile
+
+  qemu-base:
+    image: qemu-base
+    build:
+      context: ./reproducer
+      dockerfile: ./qemu-base.Dockerfile
