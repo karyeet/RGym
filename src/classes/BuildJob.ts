@@ -44,6 +44,7 @@ class BuildJob extends Job {
       `./${this.jobid}:/share`,
       'build-kernel',
       (this.options as BuildOptions).git_hash,
+      (this.options as BuildOptions).git_repo,
       String((this.options as BuildOptions).cores),
     ];
     console.log('spawning new build with options', command_options.join(' '));
