@@ -62,10 +62,10 @@ def main():
     with subprocess.Popen(['make', f'-j{cores}'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as process:
         for line in process.stdout:
             print(line.decode('ascii'), end='')
-            make_output.append(line.decode('utf8'))
+            make_output.append(line.decode('ascii'))
 
     # Check the output of the make command
-    print('Reading end of output', '\n'.join(make_output[-5:]))
+    print('Reading end of output\n', '\n'.join(make_output[-5:]))
     if 'Kernel: arch/x86/boot/bzImage is ready' not in '\n'.join(make_output[-5:]):
         print('Error: Kernel build did not complete successfully.')
         sys.exit(1)
