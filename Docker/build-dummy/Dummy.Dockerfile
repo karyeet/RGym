@@ -1,7 +1,9 @@
 FROM debian:bookworm
 
 # Install the required packages
-RUN apt update && apt install --no-install-recommends -y gcc make bison flex libelf-dev libssl-dev bc git python3 openssl findutils
+RUN apt update \
+&& apt install --no-install-recommends -y gcc make bison flex libelf-dev libssl-dev bc git python3 openssl findutils \
+&& apt clean
 
 # clone kernel source
 #RUN git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
