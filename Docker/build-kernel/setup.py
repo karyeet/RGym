@@ -61,8 +61,8 @@ def main():
     make_output = []
     with subprocess.Popen(['make', f'-j{cores}'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as process:
         for line in process.stdout:
-            print(line.decode('ascii'), end='')
-            make_output.append(line.decode('ascii'))
+            print(line.decode('utf-8'), end='')
+            make_output.append(line.decode('utf-8'))
 
     # Check the output of the make command
     print('Reading end of output\n', '\n'.join(make_output[-5:]))
