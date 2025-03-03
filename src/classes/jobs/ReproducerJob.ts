@@ -9,6 +9,7 @@ interface ReproducerOptions extends JobOptions {
   memory: number;
   boot_options: string;
   reproducer: string;
+  sshkeyPath: string;
 }
 
 const type = 'REPRODUCER';
@@ -52,43 +53,40 @@ class ReproducerJob extends Job {
     const options = this.options as ReproducerOptions;
     //qemu-system-x86_64 -m 2G -smp 2,sockets=2,cores=1 -drive file=$DISK_IMAGE,format=raw -net nic,model=e1000 -net user,host=10.0.2.10,hostfwd=tcp::10022-:22 -enable-kvm -nographic -snapshot -machine pc-q35-7.1
     const command_options = [
-      '-m',
-      `${options.memory}G`,
-      '-smp',
-      `${options.cores},sockets=1,cores=1`,
-      '-drive',
-      `file=${options.rootfsPath},format=raw`,
-      '-append',
-      '"console=ttyS0 root=/dev/sda earlyprintk=serial net.ifnames=0 nokaslr"',
-      '-net',
-      'nic,model=e1000',
-      '-enable-kvm',
-      '-nographic',
-      '-snapshot',
-      '-machine',
-      'pc-q35-7.1',
-      '-kernel',
-      `${options.bzImagePath}`,
+      'run',
+      '--rm',
+      '--device=/dev/kvm',
+      '-v',
+      `${path.join(this.jobPath, 'poc.c')}:/share/poc.c:ro`,
+      '-v',
+      `${options.rootfsPath}:/share/rootfs:ro`,
+      '-v',
+      `${options.sshkeyPath}:/share/key:ro`,
+      '-v',
+      `${options.bzImagePath}:/share/bzImage:ro`,
+      'reproducer',
+      String(options.memory), // memory
+      String(options.cores), // cores
     ];
     console.log(
       'spawning new reproducer with options',
       command_options.join(' '),
     );
-    const process = spawn('qemu-system-x86_64', command_options);
+    const process = spawn('docker', command_options);
 
-    process.stdout.on('data', data => {
-      this.logBuffer += data;
-      this.logStream.write(data);
-      //console.log(data.toString());
-    });
-    process.stderr.on('data', data => {
-      this.logBuffer += data;
-      this.logStream.write(data);
-      //console.log(data.toString());
-    });
+    //process.stdout.on('data', data => {
+    //  this.logBuffer += data;
+    //  this.logStream.write(data);
+    //  //console.log(data.toString());
+    //});
+    //process.stderr.on('data', data => {
+    //  this.logBuffer += data;
+    //  this.logStream.write(data);
+    //  //console.log(data.toString());
+    //});
 
-    //process.stdout.pipe(this.logStream, {end: false});
-    //process.stderr.pipe(this.logStream, {end: false});
+    process.stdout.pipe(this.logStream, {end: false});
+    process.stderr.pipe(this.logStream, {end: false});
 
     this.started = true;
     this.saveState();
