@@ -11,8 +11,8 @@ services:
       context: ./build-dummy
       dockerfile: ./Dummy.Dockerfile
 
-  qemu-base:
-    image: qemu-base
+  reproducer:
+    image: reproducer
     build:
       context: ./reproducer
-      dockerfile: ./qemu-base.Dockerfile
+      dockerfile: ./Reproduce.Dockerfile
