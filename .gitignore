@@ -4,3 +4,7 @@ build
 build.log
 make.log
 bzImage-*
+syzkallerimage
+data
+linux
+buildroot*
