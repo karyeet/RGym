@@ -1,29 +1,38 @@
-import {Job, JobOptions, JobType} from './Job';
-import {BuildJob, BuildOptions} from './BuildJob';
-import {ReproducerJob, ReproducerOptions} from './ReproducerJob';
+import {Job} from './JobAbstract';
+import {JobLoader} from './JobLoader';
 
 class Manager {
   private jobs: Job[] = [];
   private jobid = 0;
+  private jobLoader: JobLoader;
+  private dataPath: string;
 
-  submitJob(jobType: JobType, options: JobOptions): number {
-    let job: Job;
-    switch (jobType) {
-      case 'build': {
-        job = new BuildJob(this.jobid, options as BuildOptions);
-        break;
-      }
-      case 'reproducer': {
-        job = new ReproducerJob(this.jobid, options as ReproducerOptions);
-        break;
-      }
-      default:
-        throw new Error('Invalid job type');
-    }
-    this.jobs.push(job);
-    this.jobid++;
-    return job.jobid;
+  constructor(dataPath: string) {
+    this.jobLoader = new JobLoader();
+    this.dataPath = dataPath;
   }
+
+  async loadJobs(): Promise<void> {
+    await this.jobLoader.loadJobs(this.dataPath, this);
+    // get highest jobid
+    for (const job of this.jobs) {
+      if (job.jobid > this.jobid) {
+        this.jobid = job.jobid;
+      }
+    }
+  }
+
+  getFreeJobId(): number {
+    return ++this.jobid; // return jobid+1
+  }
+
+  addJob(job: Job): void {
+    this.jobs.push(job);
+    if (job.jobid > this.jobid) {
+      this.jobid = job.jobid; // set jobid to job.jobid
+    }
+  }
+
   getJob(jobid: number): Job | undefined {
     return this.jobs.find(job => job.jobid === jobid);
   }
