@@ -67,6 +67,7 @@ class ReproducerJob extends Job {
       'reproducer',
       String(options.memory), // memory
       String(options.cores), // cores
+      String(options.timeout), // timeout
     ];
     console.log(
       'spawning new reproducer with options',
@@ -96,7 +97,7 @@ class ReproducerJob extends Job {
       this.success = code === 0;
       this.logStream.end();
       this.saveState();
-      console.log('Build exited with code', code);
+      console.log('Reproducer exited with code', code);
     });
     return true;
   }

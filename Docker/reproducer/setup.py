@@ -11,9 +11,9 @@ def print(*args, **kwargs):
 
 def timeout():
     print('Timeout')
-    sys.exit(0) # timeout is good
+    os._exit(0) # timeout is good
 
-def waitForText(process, text, text2=None):
+def waitForText(process, text, text2=None): # these arguments were supposed to be temporary but the bug doesnt trigger when i change them (?_?)
     while True:
         line = process.stdout.readline().decode('utf-8')
         print(line, end='')
@@ -24,12 +24,13 @@ def waitForText(process, text, text2=None):
 
 def main():
     print('args received', sys.argv)
-    if len(sys.argv) != 3:
-        print('Usage: setup.py <memory> <cores>')
+    if len(sys.argv) != 4:
+        print('Usage: setup.py <memory> <cores> <timeout_sec>')
         sys.exit(1)
 
     memory = sys.argv[1]
     cores = sys.argv[2]
+    timeout_sec = int(sys.argv[3])
 
     if(len(memory) < 1):
         print('No memory provided.')
@@ -37,6 +38,10 @@ def main():
 
     if(len(cores) < 1):
         print('No memory provided.')
+        sys.exit(1)
+
+    if(timeout_sec < 1):
+        print('No timeout provided.')
         sys.exit(1)
 
     print(f'Copying POC from /share')
@@ -55,7 +60,7 @@ def main():
         '-m',
         f'{memory}G',
         '-smp',
-        f'{cores},sockets=1,cores=2',
+        f'{cores},sockets=1,cores={cores},threads=1',
         '-drive',
         'file=/share/rootfs,format=raw',
         '-append',
@@ -74,14 +79,6 @@ def main():
     ]
     print('Running QEMU with command: ' + ' '.join(qemu_command))
 
-                            # login prompt,         copy poc                                                            run poc
-    vm_state_txt =          ['syzkaller ttyS0', 'syzkaller login:', 'permitted by applicable law.', 'root@syzkaller:~#',                                                 'root@syzkaller:~#']
-    vm_state_internal_cmd = ['\n',              'root\n',            '\n',                            '\n',                                                             './poc\n'         ]
-    vm_state_external_cmd = [False,             False,               False,                         'scp -P 10021 -i /share/bullseye.id_rsa /root/poc root@localhost:',  False            ]
-    vm_state_i = 0
-    vm_state_max = len(vm_state_txt)
-
-    qemu_output = []
     qemu_proc = subprocess.Popen(qemu_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
     waitForText(qemu_proc, 'syzkaller ttyS0')
     qemu_proc.stdin.write(b'\n')
@@ -94,34 +91,15 @@ def main():
     qemu_proc.stdin.flush()
     waitForText(qemu_proc, 'root@syzkaller:~#')
     subprocess.run('scp -P 10021 -o StrictHostKeyChecking=no -i /share/key /root/poc root@localhost:'.split(' '), check=True, stderr=subprocess.STDOUT)
-    threading.Timer(60 * 10, timeout).start()
+    threading.Timer(timeout_sec, timeout).start()
     qemu_proc.stdin.write(b'./poc\n')
     qemu_proc.stdin.flush()
     while found := waitForText(qemu_proc, 'root@syzkaller:~#', 'BUG: '):
         if found == 2:
             print('BUG found')
-            os.kill( qemu_proc.pid, 9)
-            qemu_proc.wait()
             os._exit(1)
         qemu_proc.stdin.write(b'./poc\n')
         qemu_proc.stdin.flush()
-        # for line in process.stdout:
-        #     decoded_line = line.decode('ascii', 'ignore')
-        #     print(decoded_line, end='')
-        #     qemu_output.append(decoded_line)
-        #     if (vm_state_txt[vm_state_i] in decoded_line):
-        #         print(f'VM state {vm_state_i} reached')
-        #         if(vm_state_external_cmd[vm_state_i]):
-        #             print(f'Running external command {vm_state_external_cmd[vm_state_i]}')
-        #             subprocess.run(vm_state_external_cmd[vm_state_i].split(' '), check=True, stderr=subprocess.STDOUT)
-        #             print(f'Ran external command {vm_state_external_cmd[vm_state_i]}')
-        #         if(vm_state_internal_cmd[vm_state_i]):
-        #             print(f'Writing to stdin: {vm_state_internal_cmd[vm_state_i]}')
-        #             process.stdin.write(vm_state_internal_cmd[vm_state_i].encode('utf-8'))
-        #             print(f'Wrote internal command {vm_state_internal_cmd[vm_state_i]}')
-        #         process.stdin.flush()
-        #         if(vm_state_i < vm_state_max - 1): # loop last step
-        #             vm_state_i += 1
 
 
 if __name__ == '__main__':
