@@ -1,6 +1,8 @@
 import {writeFileSync, WriteStream} from 'node:fs';
 import path from 'node:path';
 import {mkdirSync, createWriteStream, readFileSync} from 'node:fs';
+import EventEmitter from 'node:events';
+
 interface JobOptions {
   timeout: number;
   cores: number;
@@ -17,7 +19,12 @@ interface JobState {
   type: string;
 }
 
-abstract class Job {
+enum JobEvents {
+  STARTED = 'started',
+  COMPLETE = 'complete',
+}
+
+abstract class Job extends EventEmitter {
   protected started = false;
   protected success = false;
   protected complete = false;
@@ -27,6 +34,7 @@ abstract class Job {
   protected type: string;
   public jobid: number;
   constructor(state: JobState) {
+    super();
     this.jobid = state.jobid;
     this.jobPath = state.jobPath;
     this.options = state.options;
@@ -47,6 +55,7 @@ abstract class Job {
   getLogs(): string {
     return readFileSync(path.join(this.jobPath, 'job.log'), 'ascii');
   }
+
   saveState(): void {
     const state: JobState = {
       jobid: this.jobid,
@@ -70,4 +79,4 @@ abstract class Job {
   }
 }
 
-export {Job, JobOptions, JobState};
+export {Job, JobOptions, JobState, JobEvents};

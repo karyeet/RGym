@@ -1,5 +1,5 @@
 import {createWriteStream} from 'fs';
-import {Job, JobOptions, JobState} from '../JobAbstract';
+import {Job, JobOptions, JobState, JobEvents} from '../JobAbstract';
 import path from 'path';
 import {existsSync, writeFileSync, mkdirSync} from 'fs';
 import {spawn} from 'child_process';
@@ -74,7 +74,7 @@ class ReproducerJob extends Job {
       command_options.join(' '),
     );
     const process = spawn('docker', command_options);
-
+    this.emit(JobEvents.STARTED);
     //process.stdout.on('data', data => {
     //  this.logBuffer += data;
     //  this.logStream.write(data);
@@ -98,6 +98,7 @@ class ReproducerJob extends Job {
       this.logStream.end();
       this.saveState();
       console.log('Reproducer exited with code', code);
+      this.emit(JobEvents.COMPLETE);
     });
     return true;
   }

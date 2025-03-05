@@ -3,7 +3,7 @@ import {mkdirSync, writeFileSync, existsSync} from 'fs';
 //import {createHash} from 'crypto';
 import path from 'path';
 
-import {Job, JobOptions, JobState} from '../JobAbstract';
+import {Job, JobOptions, JobState, JobEvents} from '../JobAbstract';
 
 const type = 'BUILD';
 
@@ -66,7 +66,7 @@ class BuildJob extends Job {
     ];
     console.log('spawning new build with options', command_options.join(' '));
     const process = spawn('docker', command_options);
-
+    this.emit(JobEvents.STARTED);
     //process.stdout.on('data', data => {
     //  this.logs += data;
     //  this.logStream.write(data);
@@ -84,6 +84,7 @@ class BuildJob extends Job {
       this.logStream.end();
       this.saveState();
       console.log('Build exited with code', code);
+      this.emit(JobEvents.COMPLETE);
     });
     return true;
   }
