@@ -68,8 +68,15 @@ abstract class Job extends EventEmitter {
     };
     writeFileSync(path.join(this.jobPath, 'state.json'), JSON.stringify(state));
   }
-  abstract isSuccess(): boolean;
-  abstract isComplete(): boolean;
+  isSuccess(): boolean {
+    return this.success;
+  }
+  isComplete(): boolean {
+    return this.complete;
+  }
+  isStarted(): boolean {
+    return this.started;
+  }
   abstract start(): void;
   setMetadata(metadata: string): void {
     this.options.metadata = metadata;

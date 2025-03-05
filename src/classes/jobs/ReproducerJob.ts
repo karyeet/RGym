@@ -1,10 +1,9 @@
-import {createWriteStream} from 'fs';
 import {Job, JobOptions, JobState, JobEvents} from '../JobAbstract';
 import path from 'path';
 import {existsSync, writeFileSync, mkdirSync} from 'fs';
 import {spawn} from 'child_process';
 interface ReproducerOptions extends JobOptions {
-  bzImagePath: string;
+  bzImageJobId: string;
   rootfsPath: string;
   memory: number;
   boot_options: string;
@@ -38,13 +37,6 @@ class ReproducerJob extends Job {
     return new ReproducerJob(new_state);
   }
 
-  isSuccess(): boolean {
-    return this.success;
-  }
-  isComplete(): boolean {
-    return this.complete;
-  }
-
   start(): boolean {
     if (this.started) {
       return false;
@@ -63,7 +55,7 @@ class ReproducerJob extends Job {
       '-v',
       `${options.sshkeyPath}:/share/key:ro`,
       '-v',
-      `${options.bzImagePath}:/share/bzImage:ro`,
+      `${path.join(this.jobPath, '..', options.bzImageJobId, 'bzImage')}:/share/bzImage:ro`,
       'reproducer',
       String(options.memory), // memory
       String(options.cores), // cores
@@ -96,6 +88,7 @@ class ReproducerJob extends Job {
       this.complete = true;
       this.success = code === 0;
       this.logStream.end();
+      this.started = false;
       this.saveState();
       console.log('Reproducer exited with code', code);
       this.emit(JobEvents.COMPLETE);

@@ -43,12 +43,6 @@ class BuildJob extends Job {
     return new BuildJob(new_state);
   }
 
-  isSuccess(): boolean {
-    return this.success;
-  }
-  isComplete(): boolean {
-    return this.complete;
-  }
   start(): boolean {
     if (this.started) {
       return false;
@@ -82,6 +76,7 @@ class BuildJob extends Job {
       this.complete = true;
       this.success = code === 0;
       this.logStream.end();
+      this.started = false;
       this.saveState();
       console.log('Build exited with code', code);
       this.emit(JobEvents.COMPLETE);
