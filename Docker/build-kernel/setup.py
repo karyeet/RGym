@@ -71,13 +71,13 @@ def main():
         sys.exit(1)
 
     # hash config
-    print('Hashing config')
-    config_hash = ''
-    with open('/linux/.config', 'rb', buffering=0) as f:
-        config_hash = hashlib.file_digest(f, 'sha256').hexdigest()[:7]
+    #print('Hashing config')
+    #config_hash = ''
+    #with open('/linux/.config', 'rb', buffering=0) as f:
+    #    config_hash = hashlib.file_digest(f, 'sha256').hexdigest()[:7]
 
     # Copy the bzImage to the /share directory with the hash in the filename
-    bzImage_name = f'/share/bzImage-{commit_hash}-{config_hash}'
+    bzImage_name = f'/share/bzImage' #-{commit_hash}-{config_hash}'
     print(f'Copying bzimage to ', bzImage_name)
     subprocess.run(['cp', '/linux/arch/x86/boot/bzImage', bzImage_name], check=True, stderr=subprocess.STDOUT)
 
