@@ -8,3 +8,6 @@ syzkallerimage
 data
 linux
 buildroot*
+poc.c
+.patch
+.config
