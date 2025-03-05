@@ -11,7 +11,8 @@
     "prepare": "npm run compile",
     "pretest": "npm run compile",
     "posttest": "npm run lint",
-    "start": "node build/src/index.js"
+    "start": "node build/src/index.js",
+    "build": "npm run compile && docker compose build"
   },
   "repository": {
     "type": "git",
@@ -31,6 +32,7 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "yup": "^1.6.1"
   }
 }
