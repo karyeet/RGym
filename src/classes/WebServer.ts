@@ -1,16 +1,12 @@
 import express from 'express';
-
-interface route {
-  route: string;
-  cb: Function;
-}
+import {schema} from './YupTypes';
 
 class WebServer {
   private app: express.Application;
   private port: number;
-  constructor(port = 3000) {
+  constructor(port = 7070) {
     this.app = express();
-    this.app.use(express.json());
+    this.app.use(express.json({limit: '5mb'}));
     this.port = port;
   }
 
@@ -20,11 +16,37 @@ class WebServer {
     });
   }
 
-  createRoute(route: string, cb: Function) {
-    this.app.post(route, (req, res) => {
+  createPostRoute(route: string, validator: schema, cb: Function) {
+    console.log('Adding POST', route);
+    this.app.post(route, async (req, res) => {
       const data = req.body;
       console.log(data);
-      res.send(cb(data));
+      let validatedData;
+      try {
+        validatedData = await validator.validate(data);
+      } catch (e) {
+        console.log(e);
+        res.status(400).send('Invalid data');
+        return;
+      }
+      res.send(cb(validatedData));
+    });
+  }
+
+  createGetRoute(route: string, validator: schema, cb: Function) {
+    console.log('Adding GET', route);
+    this.app.get(route, async (req, res) => {
+      const data = req.query;
+      console.log(data);
+      let validatedData;
+      try {
+        validatedData = await validator.validate(data);
+      } catch (e) {
+        console.log(e);
+        res.status(400).send('Invalid data');
+        return;
+      }
+      res.send(cb(validatedData));
     });
   }
 }
