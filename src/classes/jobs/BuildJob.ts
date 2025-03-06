@@ -7,11 +7,17 @@ import {Job, JobOptions, JobState, JobEvents} from '../JobAbstract';
 
 const type = 'BUILD';
 
+enum Compilers {
+  GCC = 'gcc',
+  CLANG = 'clang',
+}
+
 interface BuildOptions extends JobOptions {
   kernel_config: string;
   git_repo: string;
   git_hash: string;
   patch: string | false;
+  compiler: Compilers;
 }
 
 class BuildJob extends Job {
@@ -57,6 +63,7 @@ class BuildJob extends Job {
       options.git_hash, // git hash
       options.git_repo, // git repo
       String(options.cores), // cores
+      options.compiler, // compiler
     ];
     console.log('spawning new build with options', command_options.join(' '));
     const process = spawn('docker', command_options);
@@ -89,4 +96,4 @@ function proxyConstructor(state: JobState) {
   return new BuildJob(state);
 }
 
-export {BuildJob, type, BuildOptions, proxyConstructor};
+export {BuildJob, type, BuildOptions, proxyConstructor, Compilers};

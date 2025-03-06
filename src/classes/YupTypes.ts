@@ -1,4 +1,5 @@
-import {object, string, number, date, InferType} from 'yup';
+import {object, string, number, date, InferType, mixed} from 'yup';
+import {Compilers} from './jobs/BuildJob';
 
 // let userSchema = object({
 //   name: string().required(),
@@ -28,6 +29,7 @@ const BuildJSONSchema = object({
   timeout: number().required(),
   cores: number().required(),
   metadata: string().required(),
+  compiler: mixed<Compilers>().oneOf(Object.values(Compilers)).required(),
 });
 
 type _BuildJSONSchema = InferType<typeof BuildJSONSchema>;

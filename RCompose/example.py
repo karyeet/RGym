@@ -12,6 +12,7 @@ bjobid = rcompose.addBuildJob(
   git_hash='fcc79e1714e8',
   patch=patch,
   metadata='https://syzkaller.appspot.com/bug?extid=2d9f5f948c31dcb7745e',
+  compiler='gcc',
 )
 
 print("bjob id", bjobid)

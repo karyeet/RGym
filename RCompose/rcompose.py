@@ -37,6 +37,7 @@ patch is the patch to apply, can be an empty string
 timeout is the maximum time the job can run in seconds (not implemented for build)
 cores is the number of cores to use
 metadata is a string that will be stored with the job, can be an empty string although I suggest it be the bug link
+compiler is gcc or clang
 """ 
 def addBuildJob(kernel_config: str,
                 git_repo: str,
@@ -44,7 +45,8 @@ def addBuildJob(kernel_config: str,
                 patch: str,
                 timeout: int,
                 cores: int,
-                metadata: str) -> str:
+                metadata: str,
+                compiler: str) -> str:
     response = requests.post(f'http://localhost:{port}/addjobbuild', json={
         'kernel_config': kernel_config,
         'git_repo': git_repo,
@@ -52,7 +54,8 @@ def addBuildJob(kernel_config: str,
         'patch': patch,
         'timeout': timeout,
         'cores': cores,
-        'metadata': metadata
+        'metadata': metadata,
+        'compiler': compiler
     })
     return response.text
 

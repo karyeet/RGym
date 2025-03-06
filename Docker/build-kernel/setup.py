@@ -9,13 +9,14 @@ def print(*args, **kwargs):
 
 def main():
     print('args received', sys.argv)
-    if len(sys.argv) != 4:
-        print('Usage: setup.py <commit_hash> <repository> <cores> ')
+    if len(sys.argv) != 5:
+        print('Usage: setup.py <commit_hash> <repository> <cores> <compiler>')
         sys.exit(1)
 
     commit_hash = sys.argv[1]
     repository = sys.argv[2]
     cores = int(sys.argv[3])
+    compiler = sys.argv[4]
 
     if(len(commit_hash) < 1):
         print('No commit hash provided.')
@@ -28,6 +29,13 @@ def main():
     if(int(cores) > os.cpu_count()):
         print('Number of cores specified is greater than the number of cores available.')
         cores = os.cpu_count()
+
+    if(len(compiler) < 1):
+        print('No compiler provided.')
+        sys.exit(1)
+    if(compiler != 'gcc' and compiler != 'clang'):
+        print('Invalid compiler provided.')
+        sys.exit(1)
     
 
     print(f'Cloning {repository}')
@@ -59,7 +67,7 @@ def main():
     #make_process = subprocess.run(['make', f'-j{os.cpu_count()}'], check=True, stdout=subprocess.PIPE, text=True)
     
     make_output = []
-    with subprocess.Popen(['make', f'-j{cores}'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as process:
+    with subprocess.Popen(['make',f'CC={compiler}', f'-j{cores}'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as process:
         for line in process.stdout:
             print(line.decode('utf-8'), end='')
             make_output.append(line.decode('utf-8'))
