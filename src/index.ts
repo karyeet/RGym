@@ -17,6 +17,7 @@ interface _config {
   sshkey_path: string;
 }
 
+// eslint-disable-next-line n/no-unpublished-require
 const config: _config = require('../../config.json');
 
 const manager = new Manager(config.data_path);
@@ -59,7 +60,8 @@ webServer.createPostRoute(
       timeout: data.timeout,
     };
     const new_job = ReproducerJob.newJob(job_id, options, config.data_path);
-    return manager.addJob(new_job);
+    manager.addJob(new_job);
+    return new_job;
   },
 );
 
@@ -68,12 +70,12 @@ webServer.createPostRoute('/start', JobIDSchema, (data: _JobIDSchema) => {
   if (job) {
     if (!job.isStarted()) {
       job.start();
-      return 'Job started';
+      return true;
     } else {
-      return 'Job already started';
+      return false;
     }
   } else {
-    return 'Job not found';
+    return false;
   }
 });
 
