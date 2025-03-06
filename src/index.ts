@@ -61,7 +61,7 @@ webServer.createPostRoute(
     };
     const new_job = ReproducerJob.newJob(job_id, options, config.data_path);
     manager.addJob(new_job);
-    return new_job;
+    return job_id;
   },
 );
 
