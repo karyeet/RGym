@@ -38,7 +38,7 @@ print(f'started={bst}, complete={bc}, success={bsu}')
 
 rjobid = rcompose.addReproduceJob(
   bzImageJobId=bjobid,
-  memory=1,
+  memory=2,
   boot_options=' ',
   reproducer=poc,
   timeout=60*10,
