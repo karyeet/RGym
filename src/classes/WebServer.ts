@@ -29,7 +29,7 @@ class WebServer {
         res.status(400).send('Invalid data');
         return;
       }
-      res.send(cb(validatedData));
+      res.send(String(cb(validatedData)));
     });
   }
 
@@ -46,7 +46,7 @@ class WebServer {
         res.status(400).send('Invalid data');
         return;
       }
-      res.send(cb(validatedData));
+      res.send(String(cb(validatedData)));
     });
   }
 }
