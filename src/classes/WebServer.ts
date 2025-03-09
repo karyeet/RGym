@@ -20,12 +20,13 @@ class WebServer {
     console.log('Adding POST', route);
     this.app.post(route, async (req, res) => {
       const data = req.body;
-      console.log(data);
+      //console.log(data);
       let validatedData;
       try {
         validatedData = await validator.validate(data);
       } catch (e) {
         console.log(e);
+        console.log(data);
         res.status(400).send('Invalid data');
         return;
       }
@@ -37,11 +38,12 @@ class WebServer {
     console.log('Adding GET', route);
     this.app.get(route, async (req, res) => {
       const data = req.query;
-      console.log(data);
+      //console.log(data);
       let validatedData;
       try {
         validatedData = await validator.validate(data);
       } catch (e) {
+        console.log(data);
         console.log(e);
         res.status(400).send('Invalid data');
         return;
