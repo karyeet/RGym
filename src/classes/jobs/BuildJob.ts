@@ -16,7 +16,7 @@ interface BuildOptions extends JobOptions {
   kernel_config: string;
   git_repo: string;
   git_hash: string;
-  patch: string | false;
+  patch: string;
   compiler: Compilers;
 }
 
@@ -43,7 +43,7 @@ class BuildJob extends Job {
       path.join(new_state.jobPath, '.config'),
       options.kernel_config,
     );
-    if (options.patch) {
+    if (options.patch.length > 1) {
       writeFileSync(path.join(new_state.jobPath, '.patch'), options.patch);
     }
     return new BuildJob(new_state);
