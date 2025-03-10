@@ -67,7 +67,7 @@ def main():
     #make_process = subprocess.run(['make', f'-j{os.cpu_count()}'], check=True, stdout=subprocess.PIPE, text=True)
     
     make_output = []
-    with subprocess.Popen(['make',f'CC={compiler}', f'-j{cores}'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as process:
+    with subprocess.Popen(['make',f'CC={compiler}',f'HOSTCC={compiler}', f'-j{cores}'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT) as process:
         for line in process.stdout:
             print(line.decode('utf-8'), end='')
             make_output.append(line.decode('utf-8'))
