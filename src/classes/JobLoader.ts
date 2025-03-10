@@ -1,5 +1,5 @@
 import {Manager} from './Manager';
-import {readdirSync} from 'node:fs';
+import {readdirSync, existsSync} from 'node:fs';
 import path from 'node:path';
 import {Job, JobState} from './JobAbstract';
 import {time} from 'node:console';
@@ -43,14 +43,18 @@ class JobLoader {
     // load jobs from disk
     const jobsFolders = getDirectories(jobsPath);
     for (const jobFolder of jobsFolders) {
-      const state: JobState = require(
-        path.join(jobsPath, jobFolder, 'state.json'),
-      );
-      if (state.type in this.jobTypes) {
-        state.started = false; // jobs cant be loaded as started
-        manager.addJob(this.jobTypes[state.type](state));
-      } else {
-        console.log(`Job type ${state.type} not found`);
+      const statePath = path.join(jobsPath, jobFolder, 'state.json');
+      if (existsSync(statePath)) {
+        // if state.json exists, load the job
+        const state: JobState = require(
+          path.join(jobsPath, jobFolder, 'state.json'),
+        );
+        if (state.type in this.jobTypes) {
+          state.started = false; // jobs cant be loaded as started
+          manager.addJob(this.jobTypes[state.type](state));
+        } else {
+          console.log(`Job type ${state.type} not found`);
+        }
       }
     }
   }

@@ -58,6 +58,8 @@ class BuildJob extends Job {
       'run',
       '--rm',
       '-v',
+      `${path.join(this.jobPath, '..', 'gitcache')}:/root/.gitcache`,
+      '-v',
       `${this.jobPath}:/share`,
       'build-kernel',
       options.git_hash, // git hash
