@@ -13,14 +13,16 @@ def timeout():
     print('Timeout')
     os._exit(0) # timeout is good
 
-def waitForText(process, text, text2=None): # these arguments were supposed to be temporary but the bug doesnt trigger when i change them (?_?)
-    while True:
+def waitForText(process, strings): # these arguments were supposed to be temporary but the bug doesnt trigger when i change them (?_?)
+    while exit_code := process.poll() is None:
         line = process.stdout.readline().decode('utf-8')
         print(line, end='')
-        if text in line:
-            return 1
-        if text2 and text2 in line:
-            return 2
+        for text in strings:
+            if text in line:
+                return strings.index(text)+1
+    # qemu process is dead
+    print(f'QEMU exited with {exit_code}')
+    os._exit(1)
 
 def main():
     print('args received', sys.argv)
@@ -80,21 +82,21 @@ def main():
     print('Running QEMU with command: ' + ' '.join(qemu_command))
 
     qemu_proc = subprocess.Popen(qemu_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
-    waitForText(qemu_proc, 'syzkaller ttyS0')
+    waitForText(qemu_proc, ['syzkaller ttyS0'])
     qemu_proc.stdin.write(b'\n')
     qemu_proc.stdin.flush()
-    waitForText(qemu_proc, 'syzkaller login:')
+    waitForText(qemu_proc, ['syzkaller login:'])
     qemu_proc.stdin.write(b'root\n')
     qemu_proc.stdin.flush()
-    waitForText(qemu_proc, 'permitted by applicable law.')
+    waitForText(qemu_proc, ['permitted by applicable law.'])
     qemu_proc.stdin.write(b'\n')
     qemu_proc.stdin.flush()
-    waitForText(qemu_proc, 'root@syzkaller:~#')
+    waitForText(qemu_proc, ['root@syzkaller:~#'])
     subprocess.run('scp -P 10021 -o StrictHostKeyChecking=no -i /share/key /root/poc root@localhost:'.split(' '), check=True, stderr=subprocess.STDOUT)
     threading.Timer(timeout_sec, timeout).start()
     qemu_proc.stdin.write(b'./poc\n')
     qemu_proc.stdin.flush()
-    while found := waitForText(qemu_proc, 'root@syzkaller:~#', 'BUG: '):
+    while found := waitForText(qemu_proc, ['root@syzkaller:~#', 'BUG: ']):
         if found == 2:
             print('BUG found')
             os._exit(1)
