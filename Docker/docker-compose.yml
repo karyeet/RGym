@@ -5,11 +5,11 @@ services:
       context: ./build-kernel
       dockerfile: ./Build.Dockerfile
 
-  build-dummy:
-    image: build-dummy
-    build:
-      context: ./build-dummy
-      dockerfile: ./Dummy.Dockerfile
+#  build-dummy:
+#    image: build-dummy
+#    build:
+#      context: ./build-dummy
+#      dockerfile: ./Dummy.Dockerfile
 
   reproducer:
     image: reproducer
