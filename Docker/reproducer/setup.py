@@ -66,7 +66,7 @@ def main():
         '-object',
         f'memory-backend-ram,id=mem0,size={memory}G',
         '-numa',
-        f'node,nodeid=0,cpus=0-{cores-1},memdev=mem0',
+        f'node,nodeid=0,cpus=0-{int(cores)-1},memdev=mem0',
         '-drive',
         'file=/share/rootfs,format=raw',
         '-append',
