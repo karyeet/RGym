@@ -9,9 +9,9 @@ import threading
 def print(*args, **kwargs):
     return __builtins__.print(*args, flush=True, **kwargs)
 
-def timeout():
+def timeout(code=0):
     print('Timeout')
-    os._exit(0) # timeout is good
+    os._exit(code)
 
 def waitForText(process, strings): # these arguments were supposed to be temporary but the bug doesnt trigger when i change them (?_?)
     while exit_code := process.poll() is None:
@@ -84,7 +84,7 @@ def main():
         '/share/bzImage',
     ]
     print('Running QEMU with command: ' + ' '.join(qemu_command))
-
+    boot_timeout = threading.Timer(120, timeout, [1]).start() # boot timer
     qemu_proc = subprocess.Popen(qemu_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
     waitForText(qemu_proc, ['syzkaller ttyS0'])
     qemu_proc.stdin.write(b'\n')
@@ -97,7 +97,8 @@ def main():
     qemu_proc.stdin.flush()
     waitForText(qemu_proc, ['root@syzkaller:~#'])
     subprocess.run('scp -P 10021 -o StrictHostKeyChecking=no -i /share/key /root/poc root@localhost:'.split(' '), check=True, stderr=subprocess.STDOUT)
-    threading.Timer(timeout_sec, timeout).start()
+    boot_timeout.cancel() # stop boot timer
+    threading.Timer(timeout_sec, timeout).start() # start poc timer
     qemu_proc.stdin.write(b'./poc\n')
     qemu_proc.stdin.flush()
     while found := waitForText(qemu_proc, ['root@syzkaller:~#', 'BUG: ']):
