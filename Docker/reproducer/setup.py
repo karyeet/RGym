@@ -84,7 +84,8 @@ def main():
         '/share/bzImage',
     ]
     print('Running QEMU with command: ' + ' '.join(qemu_command))
-    boot_timeout = threading.Timer(120, timeout, [1]).start() # boot timer
+    boot_timeout = threading.Timer(120, timeout, [1])
+    boot_timeout.start() # boot timer
     qemu_proc = subprocess.Popen(qemu_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
     waitForText(qemu_proc, ['syzkaller ttyS0'])
     qemu_proc.stdin.write(b'\n')
