@@ -55,7 +55,7 @@ def main():
     # copy patch if patch exists
     if os.path.exists('/share/.patch'):
         print('Applying patch')
-        subprocess.run(['git', 'apply', '/share/.patch'], check=True, stderr=subprocess.STDOUT)
+        subprocess.run(['git', 'apply',  '--ignore-space-change', ' --ignore-whitespace', '/share/.patch'], check=True, stderr=subprocess.STDOUT)
     else:
         print('Not patching (patch not found)')
 
