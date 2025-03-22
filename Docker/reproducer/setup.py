@@ -3,7 +3,7 @@ import subprocess
 import sys
 import os
 import threading
-
+import json
 
 
 def print(*args, **kwargs):
@@ -26,13 +26,14 @@ def waitForText(process, strings): # these arguments were supposed to be tempora
 
 def main():
     print('args received', sys.argv)
-    if len(sys.argv) != 4:
-        print('Usage: setup.py <memory> <cores> <timeout_sec>')
+    if len(sys.argv) != 5:
+        print('Usage: setup.py <memory> <cores> <timeout_sec> <reproducer_type>')
         sys.exit(1)
 
     memory = sys.argv[1]
     cores = sys.argv[2]
     timeout_sec = int(sys.argv[3])
+    reproducer_type = sys.argv[4]
 
     if(len(memory) < 1):
         print('No memory provided.')
@@ -46,16 +47,71 @@ def main():
         print('No timeout provided.')
         sys.exit(1)
 
+    if(reproducer_type != 'c' and reproducer_type != 'syz'):
+        print('Invalid reproducer type.')
+        sys.exit(1)
+
     print(f'Copying POC from /share')
-    subprocess.run(['cp', '/share/poc.c', '/root/poc.c'], check=True, stderr=subprocess.STDOUT)
+    subprocess.run(['cp', '/share/poc', '/root/poc'], check=True, stderr=subprocess.STDOUT)
 
+    print(f'Copying syz progs from /syzprogs')
+    ret = os.system('cp /syzprogs/* /root/')
+    if(ret != 0):
+        print('Failed to copy syzprogs')
+        os._exit(1)
+    #subprocess.run(['cp', '/syzprogs/*', '/root/'], check=True, stderr=subprocess.STDOUT)
+
+    exec_cmd = './poc.o'
     os.chdir('/root')
+    if reproducer_type == 'c':
+        print(f'Building POC')
+        subprocess.run(['mv', '/root/poc', '/root/poc.c'], check=True, stderr=subprocess.STDOUT)
+        subprocess.run(['gcc', '-pthread', '-static', '/root/poc.c', '-o', '/root/poc.o'], check=True, stderr=subprocess.STDOUT)
+        
+        print(f'chmod +x poc.o')
+        subprocess.run(['chmod', '+x', '/root/poc.o'], check=True, stderr=subprocess.STDOUT)
+    elif reproducer_type == 'syz':
+        # check for header
+        exec_cmd = ['./syz-execprog']
+        with open('/root/poc', 'r') as f:
+            rep = f.readlines()
+            if '#{"' not in rep[2]:
+                print('Could not find syzkaller header in poc')
+                os._exit(1)
+            args = json.loads(rep[2][1:]) # parse args json, skip comment #
+            # process features
+            features =   ['binfmt_misc',  'cgroups',  'close_fds',  'devlink_pci',  'ieee802154',  'net_dev',
+                                   'net_reset',  'nic_vf',  'swap',  'sysctl',  'tun',  'usb',  'vhci',  'wifi', 'segv']
+            enabled_features = []
+            for feature in features:
+                if(args.get(feature) is True):
+                    print(f'Enable {feature}')
+                    enabled_features.append(feature)
+            if(args.get('resetnet') is True):
+                print('Enable resetnet')
+                enabled_features.append('net_reset')
+            if(args.get('netdev') is True):
+                print('Enable netdev')
+                enabled_features.append('net_dev')
+            exec_cmd.append('-enable=' + ','.join(enabled_features))
+            # process repeat
+            if(args.get('repeat') is True):
+                print('Enable repeat')
+                exec_cmd.append('-repeat=0')
+            # process other args 
+            other_args = ['threaded', 'procs', 'slowdown', 'sandbox', 'sandbox_arg', 'collide', 'fault', 'fault_call', 'fault_nth', ]
+            for arg in other_args:
+                if(args.get(arg) is not None):
+                    if(args.get(arg) is True):
+                        print(f'Enable {arg}')
+                        exec_cmd.append(f'-{arg}=true')
+                    else:
+                        print(f'Enable {arg} with value {args.get(arg)}')
+                        exec_cmd.append(f'-{arg}={args.get(arg)}')
+            exec_cmd.append('/root/poc')
+            exec_cmd = ' '.join(exec_cmd)
+            
 
-    print(f'Building POC')
-    subprocess.run(['gcc', '-pthread', '-static', '/root/poc.c', '-o', '/root/poc'], check=True, stderr=subprocess.STDOUT)
-    
-    print(f'chmod +x poc')
-    subprocess.run(['chmod', '+x', '/root/poc'], check=True, stderr=subprocess.STDOUT)
 
     qemu_command =[
         "qemu-system-x86_64",
@@ -97,16 +153,18 @@ def main():
     qemu_proc.stdin.write(b'\n')
     qemu_proc.stdin.flush()
     waitForText(qemu_proc, ['root@syzkaller:~#'])
-    subprocess.run('scp -P 10021 -o StrictHostKeyChecking=no -i /share/key /root/poc root@localhost:'.split(' '), check=True, stderr=subprocess.STDOUT)
+    subprocess.run('scp -r -P 10021 -o StrictHostKeyChecking=no -i /share/key /root/ root@localhost:/'.split(' '), check=True, stderr=subprocess.STDOUT)
+    qemu_proc.stdin.write(b'ls\n')
+    qemu_proc.stdin.flush()
     boot_timeout.cancel() # stop boot timer
     threading.Timer(timeout_sec, timeout).start() # start poc timer
-    qemu_proc.stdin.write(b'./poc\n')
+    qemu_proc.stdin.write(f'{exec_cmd}\n'.encode('utf-8'))
     qemu_proc.stdin.flush()
     while found := waitForText(qemu_proc, ['root@syzkaller:~#', 'BUG: ']):
         if found == 2:
             print('BUG found')
             os._exit(1)
-        qemu_proc.stdin.write(b'./poc\n')
+        qemu_proc.stdin.write(f'{exec_cmd}\n'.encode('utf-8'))
         qemu_proc.stdin.flush()
 
 

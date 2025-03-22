@@ -59,6 +59,7 @@ webServer.createPostRoute(
       cores: data.cores,
       metadata: data.metadata,
       timeout: data.timeout,
+      reproducerType: data.reproducerType,
     };
     const new_job = ReproducerJob.newJob(job_id, options, config.data_path);
     manager.addJob(new_job);

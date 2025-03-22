@@ -68,6 +68,7 @@ reproducer is the c reproducer, syz reproducer not yet implemented
 timeout is the maximum time the job can run in seconds (so probably do 60*10)
 cores is the number of cores to use (4 is a good number)
 metadata is a string that will be stored with the job, can be an empty string although I suggest it be the bug link
+reproducerType is c or syz
 """
 def addReproduceJob(bzImageJobId: str,
                     memory: int,
@@ -75,7 +76,8 @@ def addReproduceJob(bzImageJobId: str,
                     reproducer: str,
                     timeout: int,
                     cores: int,
-                    metadata: str
+                    metadata: str,
+                    reproducerType: str
                     ) -> str:
     response = requests.post(f'http://localhost:{port}/addjobreproducer', json={
         'bzImageJobId': bzImageJobId,
@@ -84,7 +86,8 @@ def addReproduceJob(bzImageJobId: str,
         'reproducer': reproducer,
         'timeout': timeout,
         'cores': cores,
-        'metadata': metadata
+        'metadata': metadata,
+        'reproducerType': reproducerType
     })
     return response.text
 

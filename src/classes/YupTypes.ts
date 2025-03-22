@@ -1,5 +1,6 @@
 import {object, string, number, date, InferType, mixed} from 'yup';
 import {Compilers} from './jobs/BuildJob';
+import {ReproducerType} from './jobs/ReproducerJob';
 
 // let userSchema = object({
 //   name: string().required(),
@@ -44,6 +45,9 @@ const ReproducerJSONSchema = object({
   timeout: number().required(),
   cores: number().required(),
   metadata: string().required(),
+  reproducerType: mixed<ReproducerType>()
+    .oneOf(Object.values(ReproducerType))
+    .required(),
 });
 
 type _ReproducerJSONSchema = InferType<typeof ReproducerJSONSchema>;

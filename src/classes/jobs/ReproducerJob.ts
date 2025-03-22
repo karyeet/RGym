@@ -8,7 +8,13 @@ interface ReproducerOptions extends JobOptions {
   memory: number;
   boot_options: string;
   reproducer: string;
+  reproducerType: ReproducerType;
   sshkeyPath: string;
+}
+
+enum ReproducerType {
+  SYZ = 'syz',
+  C = 'c',
 }
 
 const type = 'REPRODUCER';
@@ -33,7 +39,7 @@ class ReproducerJob extends Job {
     if (!existsSync(new_state.jobPath)) {
       mkdirSync(new_state.jobPath);
     }
-    writeFileSync(path.join(new_state.jobPath, 'poc.c'), options.reproducer);
+    writeFileSync(path.join(new_state.jobPath, 'poc'), options.reproducer);
     return new ReproducerJob(new_state);
   }
 
@@ -49,7 +55,7 @@ class ReproducerJob extends Job {
       '--rm',
       '--device=/dev/kvm',
       '-v',
-      `${path.join(this.jobPath, 'poc.c')}:/share/poc.c:ro`,
+      `${path.join(this.jobPath, 'poc')}:/share/poc:ro`,
       '-v',
       `${options.rootfsPath}:/share/rootfs:ro`,
       '-v',
@@ -60,6 +66,7 @@ class ReproducerJob extends Job {
       String(options.memory), // memory
       String(options.cores), // cores
       String(options.timeout), // timeout
+      options.reproducerType, // reproducer type
     ];
     console.log(
       'spawning new reproducer with options',
@@ -101,4 +108,10 @@ function proxyConstructor(state: JobState) {
   return new ReproducerJob(state);
 }
 
-export {ReproducerJob, type, ReproducerOptions, proxyConstructor};
+export {
+  ReproducerJob,
+  type,
+  ReproducerOptions,
+  proxyConstructor,
+  ReproducerType,
+};
