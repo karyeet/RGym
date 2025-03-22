@@ -2,7 +2,7 @@ import rcompose
 
 config = open('.config').read()
 patch = open('.patch').read()
-poc = open('poc.c').read()
+poc = open('poc.syz').read()
 
 bjobid = rcompose.addBuildJob(
   timeout=1000,
@@ -45,6 +45,7 @@ rjobid = rcompose.addReproduceJob(
   timeout=60*10,
   cores=2,
   metadata='https://syzkaller.appspot.com/bug?extid=2d9f5f948c31dcb7745e',
+  reproducerType='syz',
 )
 
 print("rjob id", rjobid)
