@@ -39,7 +39,7 @@ def main():
     
 
     print(f'Cloning {repository}')
-    subprocess.run(['git', 'clone', '--progress', repository], check=True, stderr=subprocess.STDOUT)
+    subprocess.run(['git', 'clone', '--progress', repository, 'linux'], check=True, stderr=subprocess.STDOUT)
 
     # Change directory to /linux
     os.chdir('/linux')
