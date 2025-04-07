@@ -81,7 +81,7 @@ def main():
             args = json.loads(rep[2][1:]) # parse args json, skip comment #
             # process features
             features =   ['binfmt_misc',  'cgroups',  'close_fds',  'devlink_pci',  'ieee802154',  'net_dev',
-                                   'net_reset',  'nic_vf',  'swap',  'sysctl',  'tun',  'usb',  'vhci',  'wifi', 'segv']
+                                   'net_reset',  'nic_vf',  'swap',  'sysctl',  'tun',  'usb',  'vhci',  'wifi']
             enabled_features = []
             for feature in features:
                 if(args.get(feature) is True):
@@ -98,8 +98,16 @@ def main():
             if(args.get('repeat') is True):
                 print('Enable repeat')
                 exec_cmd.append('-repeat=0')
+            # process sandbox
+            if(args.get('sandbox') is not None):
+                if(args.get('sandbox') == ""):
+                    print('Set sandbox none')
+                    exec_cmd.append('-sandbox=none')
+                else:
+                    print('Set sandbox')
+                    exec_cmd.append(f'-sandbox={args.get('sandbox')}')
             # process other args 
-            other_args = ['threaded', 'procs', 'slowdown', 'sandbox', 'sandbox_arg', 'collide', 'fault', 'fault_call', 'fault_nth', ]
+            other_args = ['threaded', 'procs', 'slowdown', 'sandbox_arg', 'collide', 'fault', 'fault_call', 'fault_nth', ]
             for arg in other_args:
                 if(args.get(arg) is not None):
                     if(args.get(arg) is True):
