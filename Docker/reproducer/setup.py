@@ -99,13 +99,14 @@ def main():
                 print('Enable repeat')
                 exec_cmd.append('-repeat=0')
             # process sandbox
-            if(args.get('sandbox') is not None):
-                if(args.get('sandbox') == ""):
+            sandbox_arg = args.get('sandbox')
+            if(sandbox_arg is not None):
+                if(sandbox_arg == ""):
                     print('Set sandbox none')
                     exec_cmd.append('-sandbox=none')
                 else:
                     print('Set sandbox')
-                    exec_cmd.append(f'-sandbox={args.get('sandbox')}')
+                    exec_cmd.append(f'-sandbox={sandbox_arg}')
             # process other args 
             other_args = ['threaded', 'procs', 'slowdown', 'sandbox_arg', 'collide', 'fault', 'fault_call', 'fault_nth', ]
             for arg in other_args:
