@@ -121,6 +121,16 @@ webServer.createGetRoute('/getLogs', JobIDSchema, (param: _JobIDSchema) => {
   }
 });
 
+webServer.createGetRoute('/getState', JobIDSchema, (param: _JobIDSchema) => {
+  const jobid = param.jobid;
+  const job = manager.getJob(jobid);
+  if (job) {
+    return JSON.stringify(job.getState());
+  } else {
+    return 'Job not found';
+  }
+});
+
 manager
   .loadJobs()
   .then(() => {

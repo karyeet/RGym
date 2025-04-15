@@ -28,6 +28,11 @@ def getLogs(jobid: str) -> str:
     response = requests.get(f'http://localhost:{port}/getlogs?jobid={jobid}')
     return response.text
 
+# Get the state for a job as a json
+def getState(jobid: str) -> dict:
+    response = requests.get(f'http://localhost:{port}/getstate?jobid={jobid}')
+    return response.json()
+
 
 """
 kernel_config is the .config file,

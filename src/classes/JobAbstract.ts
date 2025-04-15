@@ -56,6 +56,12 @@ abstract class Job extends EventEmitter {
     return readFileSync(path.join(this.jobPath, 'job.log'), 'ascii');
   }
 
+  getState(): JobState {
+    return JSON.parse(
+      readFileSync(path.join(this.jobPath, 'state.json'), 'ascii'),
+    );
+  }
+
   saveState(): void {
     const state: JobState = {
       jobid: this.jobid,
