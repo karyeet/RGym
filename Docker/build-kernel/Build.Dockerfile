@@ -2,7 +2,7 @@ FROM debian:bookworm
 
 # Install the required packages
 RUN apt update \
-&& apt install --no-install-recommends -y gcc clang make bison flex libelf-dev libssl-dev bc git python3 openssl findutils ca-certificates wget git-lfs \
+&& apt install --no-install-recommends -y gcc clang make bison flex libelf-dev libssl-dev bc git python3 openssl findutils ca-certificates wget \
 && apt clean
 
 # clone kernel source
