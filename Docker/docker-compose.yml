@@ -1,10 +1,7 @@
+include:
+  - clang-images.yml
+  - gcc-images.yml
 services:
-  build-kernel:
-    image: build-kernel
-    build:
-      context: ./build-kernel
-      dockerfile: ./Build.Dockerfile
-
 #  build-dummy:
 #    image: build-dummy
 #    build:

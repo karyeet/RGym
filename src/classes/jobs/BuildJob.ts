@@ -18,6 +18,7 @@ interface BuildOptions extends JobOptions {
   git_hash: string;
   patch: string;
   compiler: Compilers;
+  compilerMajorVersion: number;
 }
 
 class BuildJob extends Job {
@@ -61,7 +62,7 @@ class BuildJob extends Job {
       `${path.join(this.jobPath, '..', 'gitcache')}:/root/.gitcache`,
       '-v',
       `${this.jobPath}:/share`,
-      'build-kernel',
+      `${options.compiler}-${options.compilerMajorVersion}`,
       options.git_hash, // git hash
       options.git_repo, // git repo
       String(options.cores), // cores

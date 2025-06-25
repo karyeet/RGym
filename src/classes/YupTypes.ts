@@ -31,6 +31,7 @@ const BuildJSONSchema = object({
   cores: number().required(),
   metadata: string().required(),
   compiler: mixed<Compilers>().oneOf(Object.values(Compilers)).required(),
+  compilerMajorVersion: number().required(),
 });
 
 type _BuildJSONSchema = InferType<typeof BuildJSONSchema>;

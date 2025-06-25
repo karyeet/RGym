@@ -37,6 +37,7 @@ webServer.createPostRoute(
       metadata: data.metadata,
       timeout: data.timeout,
       compiler: data.compiler,
+      compilerMajorVersion: data.compilerMajorVersion,
     };
     const new_job = BuildJob.newJob(job_id, options, config.data_path);
     manager.addJob(new_job);

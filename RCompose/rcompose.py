@@ -1,6 +1,6 @@
 import requests
 import time
-
+import re
 port = 7070
 
 """
@@ -33,6 +33,32 @@ def getState(jobid: str) -> dict:
     response = requests.get(f'http://localhost:{port}/getstate?jobid={jobid}')
     return response.json()
 
+# Return full compiler string from a .config file
+def read_full_compiler(file_contents: str) -> str:
+    lines = file_contents.splitlines()
+    for line in lines:
+        if line.startswith("CONFIG_CC_VERSION_TEXT="):
+            return line.strip().split("=")[1].strip().strip('"')
+        if line.startswith("# Compiler: "):
+            return line.strip().split(": ")[1].strip()
+    #print("No compiler found in", file)
+    return None
+
+# Parse the compiler string to type and version
+def parse_compiler_string(compiler_str: str) -> dict:
+    compiler = re.search(r'(gcc|clang)', compiler_str)
+    version = re.search(r'\d+\.\d+\.\d+', compiler_str)
+    if compiler and version:
+        version = version.group(0).split('.') # major, minor, patch
+        version = [int(num) for num in version]  # Convert to integers
+        return {"type": compiler.group(0), "major": version[0], "minor": version[1], "patch": version[2]}
+    else:
+        raise ValueError("Invalid compiler string format")
+    
+
+
+
+
 
 """
 kernel_config is the .config file,
@@ -51,7 +77,8 @@ def addBuildJob(kernel_config: str,
                 timeout: int,
                 cores: int,
                 metadata: str,
-                compiler: str) -> str:
+                compiler: str,
+                compilerMajorVersion: int) -> str:
     response = requests.post(f'http://localhost:{port}/addjobbuild', json={
         'kernel_config': kernel_config,
         'git_repo': git_repo,
@@ -60,7 +87,8 @@ def addBuildJob(kernel_config: str,
         'timeout': timeout,
         'cores': cores,
         'metadata': metadata,
-        'compiler': compiler
+        'compiler': compiler,
+        'compilerMajorVersion': compilerMajorVersion 
     })
     return response.text
 
