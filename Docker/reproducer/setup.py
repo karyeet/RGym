@@ -152,7 +152,7 @@ def main():
         '-drive',
         'file=/share/rootfs,format=raw',
         '-append',
-        '"console=ttyS0 root=/dev/sda earlyprintk=serial net.ifnames=0 nokaslr"',
+        '"console=ttyS0 root=/dev/sda rootwait earlyprintk=serial net.ifnames=0 nokaslr"',
         '-net',
         'nic,model=e1000',
         '-net',
@@ -166,7 +166,7 @@ def main():
         '/share/bzImage',
     ]
     print('Running QEMU with command: ' + ' '.join(qemu_command))
-    boot_timeout = threading.Timer(120, timeout, [exit_codes.BOOT_FAIL.value]) # 120 seconds to boot
+    boot_timeout = threading.Timer(180, timeout, [exit_codes.BOOT_FAIL.value]) # 180 seconds to boot
     boot_timeout.start() # boot timer
     qemu_proc = subprocess.Popen(qemu_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
     waitForText(qemu_proc, ['syzkaller ttyS0'])
