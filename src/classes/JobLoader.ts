@@ -50,7 +50,7 @@ class JobLoader {
           path.join(jobsPath, jobFolder, 'state.json'),
         );
         if (state.type in this.jobTypes) {
-          state.started = false; // jobs cant be loaded as started
+          state.running = false; // jobs cant be loaded as running
           manager.addJob(this.jobTypes[state.type](state));
         } else {
           console.log(`Job type ${state.type} not found`);

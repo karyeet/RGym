@@ -4,32 +4,28 @@ import re
 port = 7070
 
 """
-Was the job successful.
-For building, this is if a bzImage was produced.
-For reproducing, this is if the job ran without triggernig a bug.
+Exit code reported by run script of job.
 """
-def isSuccess(jobid: str) -> bool:
-    response = requests.get(f'http://localhost:{port}/issuccess?jobid={jobid}')
+def get_exit_code(jobid: str) -> bool:
+    endpoint = "getExitCode"
+    response = requests.get(f'http://localhost:{port}/{endpoint}?jobid={jobid}')
     return response.json()
 
-# Is the job complete (has the job ran once, successfully or with failure).
-def isComplete(jobid: str) -> bool:
-    response = requests.get(
-        f'http://localhost:{port}/iscomplete?jobid={jobid}')
-    return response.json()
-
-# Is the job started (running)
-def isStarted(jobid: str) -> bool:
-    response = requests.get(f'http://localhost:{port}/isstarted?jobid={jobid}')
+"""
+If the job is running.
+"""
+def is_running(jobid: str) -> bool:
+    endpoint = "isRunning"
+    response = requests.get(f'http://localhost:{port}/{endpoint}?jobid={jobid}')
     return response.json()
 
 # Get the logs for a job as a string
-def getLogs(jobid: str) -> str:
+def get_logs(jobid: str) -> str:
     response = requests.get(f'http://localhost:{port}/getlogs?jobid={jobid}')
     return response.text
 
 # Get the state for a job as a json
-def getState(jobid: str) -> dict:
+def get_state(jobid: str) -> dict:
     response = requests.get(f'http://localhost:{port}/getstate?jobid={jobid}')
     return response.json()
 
@@ -55,8 +51,6 @@ def parse_compiler_string(compiler_str: str) -> dict:
     else:
         raise ValueError("Invalid compiler string format")
     
-
-
 
 
 
@@ -124,14 +118,20 @@ def addReproduceJob(bzImageJobId: str,
     })
     return response.text
 
-# wait for job to complete, blocking, returns success
+"""
+Wait for job to complete, blocking, return exit code.
+"""
 def waitForJob(jobid: str) -> bool:
-    while not isComplete(jobid):
+    while is_running(jobid):
         time.sleep(4)
-    return isSuccess(jobid)
+    return get_exit_code(jobid)
 
 
-def start(jobid: str):
+"""
+Start the job.
+Returns true if the job was started, false if it was already started and not started again.
+"""
+def start(jobid: str) -> bool:
     response = requests.post(f'http://localhost:{port}/start', json={'jobid': jobid})
     return response.json()
 

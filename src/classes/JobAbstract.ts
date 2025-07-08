@@ -10,9 +10,9 @@ interface JobOptions {
 }
 
 interface JobState {
-  started: boolean;
-  success: boolean;
-  complete: boolean;
+  exitCode: number;
+  running: boolean;
+  started_at: number;
   options: JobOptions;
   jobPath: string;
   jobid: number;
@@ -21,13 +21,13 @@ interface JobState {
 
 enum JobEvents {
   STARTED = 'started',
-  COMPLETE = 'complete',
+  EXITED = 'exited',
 }
 
 abstract class Job extends EventEmitter {
-  protected started = false;
-  protected success = false;
-  protected complete = false;
+  protected exitCode = -1;
+  protected running = false;
+  protected started_at = -1;
   protected options: JobOptions;
   protected logStream: WriteStream;
   protected jobPath: string;
@@ -38,9 +38,9 @@ abstract class Job extends EventEmitter {
     this.jobid = state.jobid;
     this.jobPath = state.jobPath;
     this.options = state.options;
-    this.started = state.started;
-    this.success = state.success;
-    this.complete = state.complete;
+    this.exitCode = state.exitCode;
+    this.running = state.running;
+    this.started_at = state.started_at;
     this.type = state.type;
     this.jobid = state.jobid;
     this.jobPath = state.jobPath;
@@ -67,23 +67,30 @@ abstract class Job extends EventEmitter {
       jobid: this.jobid,
       jobPath: this.jobPath,
       options: this.options,
-      started: this.started,
-      success: this.success,
-      complete: this.complete,
+      exitCode: this.exitCode,
+      running: this.running,
+      started_at: this.started_at,
       type: this.type,
     };
     writeFileSync(path.join(this.jobPath, 'state.json'), JSON.stringify(state));
   }
-  isSuccess(): boolean {
-    return this.success;
+  getExitCode(): number {
+    return this.exitCode;
   }
-  isComplete(): boolean {
-    return this.complete;
+  isRunning(): boolean {
+    return this.running;
   }
-  isStarted(): boolean {
-    return this.started;
+  getStartedTimestamp(): number {
+    return this.started_at;
   }
+
+  _start(): void {
+    this.started_at = Date.now();
+    this.running = true;
+  }
+
   abstract start(): void;
+
   setMetadata(metadata: string): void {
     this.options.metadata = metadata;
   }

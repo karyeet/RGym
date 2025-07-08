@@ -32,9 +32,9 @@ class BuildJob extends Job {
       jobid,
       jobPath: path.join(dataPath, String(jobid)),
       options,
-      started: false,
-      success: false,
-      complete: false,
+      started_at: -1,
+      running: false,
+      exitCode: -1,
       type: type,
     };
     if (!existsSync(new_state.jobPath)) {
@@ -51,9 +51,10 @@ class BuildJob extends Job {
   }
 
   start(): boolean {
-    if (this.started) {
+    if (this.running) {
       return false;
     }
+    super._start();
     const options = this.options as BuildOptions;
     const command_options = [
       'run',
@@ -79,17 +80,15 @@ class BuildJob extends Job {
     process.stdout.pipe(this.logStream, {end: false});
     process.stderr.pipe(this.logStream, {end: false});
 
-    this.started = true;
     this.saveState();
 
-    process.on('exit', (code, _) => {
-      this.complete = true;
-      this.success = code === 0;
+    process.on('exit', (code: number) => {
+      this.running = false;
+      this.exitCode = code;
       this.logStream.end();
-      this.started = false;
       this.saveState();
       console.log('Build exited with code', code);
-      this.emit(JobEvents.COMPLETE);
+      this.emit(JobEvents.EXITED);
     });
     return true;
   }

@@ -26,25 +26,22 @@ bjobid = rcompose.addBuildJob(
 
 print("bjob id", bjobid)
 
-bst = rcompose.isStarted(bjobid)
-bc = rcompose.isComplete(bjobid)
-bsu = rcompose.isSuccess(bjobid)
-print(f'started={bst}, complete={bc}, success={bsu}')
+b_running = rcompose.is_running(bjobid)
+b_exit_code = rcompose.get_exit_code(bjobid)
+print(f'running={b_running}, exit_code={b_exit_code}')
 
 print("start 1 (true)",rcompose.start(bjobid))
 print("start 2 (false)",rcompose.start(bjobid))
 
 print("Build job started")
-bst = rcompose.isStarted(bjobid)
-bc = rcompose.isComplete(bjobid)
-bsu = rcompose.isSuccess(bjobid)
-print(f'started={bst}, complete={bc}, success={bsu}')
+b_running = rcompose.is_running(bjobid)
+b_exit_code = rcompose.get_exit_code(bjobid)
+print(f'running={b_running}, exit_code={b_exit_code}')
 
 print("Build job finished with", rcompose.waitForJob(bjobid))
-bst = rcompose.isStarted(bjobid)
-bc = rcompose.isComplete(bjobid)
-bsu = rcompose.isSuccess(bjobid)
-print(f'started={bst}, complete={bc}, success={bsu}')
+b_running = rcompose.is_running(bjobid)
+b_exit_code = rcompose.get_exit_code(bjobid)
+print(f'running={b_running}, exit_code={b_exit_code}')
 
 rjobid = rcompose.addReproduceJob(
   bzImageJobId=bjobid,
@@ -59,22 +56,19 @@ rjobid = rcompose.addReproduceJob(
 
 print("rjob id", rjobid)
 
-rst = rcompose.isStarted(rjobid)
-rc = rcompose.isComplete(rjobid)
-rsu = rcompose.isSuccess(rjobid)
-print(f'started={rst}, complete={rc}, success={rsu}')
+r_running = rcompose.is_running(rjobid)
+r_exit_code = rcompose.get_exit_code(rjobid)
+print(f'running={r_running}, exit_code={r_exit_code}')
 
 print("start 1 (true)",rcompose.start(rjobid))
 print("start 2 (false)",rcompose.start(rjobid))
 
 print("Reproducer job started")
-rst = rcompose.isStarted(rjobid)
-rc = rcompose.isComplete(rjobid)
-rsu = rcompose.isSuccess(rjobid)
-print(f'started={rst}, complete={rc}, success={rsu}')
+r_running = rcompose.is_running(rjobid)
+r_exit_code = rcompose.get_exit_code(rjobid)
+print(f'running={r_running}, exit_code={r_exit_code}')
 
 print("Reproducer job finished with", rcompose.waitForJob(rjobid))
-rst = rcompose.isStarted(rjobid)
-rc = rcompose.isComplete(rjobid)
-rsu = rcompose.isSuccess(rjobid)
-print(f'started={rst}, complete={rc}, success={rsu}')
+r_running = rcompose.is_running(rjobid)
+r_exit_code = rcompose.get_exit_code(rjobid)
+print(f'running={r_running}, exit_code={r_exit_code}')

@@ -1,10 +1,20 @@
 #!/usr/bin/python3
+from concurrent.futures import process
 import subprocess
 import sys
 import os
 import threading
 import json
+import enum
+import time
 
+class exit_codes(enum.Enum):
+    TIMEOUT = 0
+    SANITIZER_TRIGGER = 1
+    BOOT_FAIL = 2
+    INVALID_ARG = 3
+    UNKNOWN_ERROR = 4
+    SETUP_ERROR = 5
 
 def print(*args, **kwargs):
     return __builtins__.print(*args, flush=True, **kwargs)
@@ -22,13 +32,13 @@ def waitForText(process, strings): # these arguments were supposed to be tempora
                 return strings.index(text)+1
     # qemu process is dead
     print(f'QEMU exited with {exit_code}')
-    os._exit(1)
+    os._exit(exit_codes.UNKNOWN_ERROR.value)
 
 def main():
     print('args received', sys.argv)
     if len(sys.argv) != 5:
         print('Usage: setup.py <memory> <cores> <timeout_sec> <reproducer_type>')
-        sys.exit(1)
+        sys.exit(exit_codes.INVALID_ARG.value)
 
     memory = sys.argv[1]
     cores = sys.argv[2]
@@ -37,39 +47,46 @@ def main():
 
     if(len(memory) < 1):
         print('No memory provided.')
-        sys.exit(1)
+        sys.exit(exit_codes.INVALID_ARG.value)
 
     if(len(cores) < 1):
         print('No memory provided.')
-        sys.exit(1)
+        sys.exit(exit_codes.INVALID_ARG.value)
 
     if(timeout_sec < 1):
         print('No timeout provided.')
-        sys.exit(1)
+        sys.exit(exit_codes.INVALID_ARG.value)
 
     if(reproducer_type != 'c' and reproducer_type != 'syz'):
         print('Invalid reproducer type.')
-        sys.exit(1)
+        sys.exit(exit_codes.INVALID_ARG.value)
 
     print(f'Copying POC from /share')
-    subprocess.run(['cp', '/share/poc', '/root/poc'], check=True, stderr=subprocess.STDOUT)
+    copypoc_proc = subprocess.run(['cp', '/share/poc', '/root/poc'], stderr=subprocess.STDOUT)
+    if copypoc_proc.returncode != 0:
+        print('Failed to copy POC')
+        os._exit(exit_codes.SETUP_ERROR.value)
 
     print(f'Copying syz progs from /syzprogs')
     ret = os.system('cp /syzprogs/* /root/')
     if(ret != 0):
         print('Failed to copy syzprogs')
-        os._exit(1)
+        os._exit(exit_codes.SETUP_ERROR.value)
     #subprocess.run(['cp', '/syzprogs/*', '/root/'], check=True, stderr=subprocess.STDOUT)
 
     exec_cmd = './poc.o'
     os.chdir('/root')
     if reproducer_type == 'c':
         print(f'Building POC')
-        subprocess.run(['mv', '/root/poc', '/root/poc.c'], check=True, stderr=subprocess.STDOUT)
-        subprocess.run(['gcc', '-pthread', '-static', '/root/poc.c', '-o', '/root/poc.o'], check=True, stderr=subprocess.STDOUT)
-        
-        print(f'chmod +x poc.o')
-        subprocess.run(['chmod', '+x', '/root/poc.o'], check=True, stderr=subprocess.STDOUT)
+        try:
+            subprocess.run(['mv', '/root/poc', '/root/poc.c'], check=True, stderr=subprocess.STDOUT)
+            subprocess.run(['gcc', '-pthread', '-static', '/root/poc.c', '-o', '/root/poc.o'], check=True, stderr=subprocess.STDOUT)
+            
+            print(f'chmod +x poc.o')
+            subprocess.run(['chmod', '+x', '/root/poc.o'], check=True, stderr=subprocess.STDOUT)
+        except Exception as e:
+            print(f'Error: Failed to build POC: {e}')
+            os._exit(exit_codes.SETUP_ERROR.value)
     elif reproducer_type == 'syz':
         # check for header
         exec_cmd = ['./syz-execprog']
@@ -77,7 +94,7 @@ def main():
             rep = f.readlines()
             if '#{"' not in rep[2]:
                 print('Could not find syzkaller header in poc')
-                os._exit(1)
+                os._exit(exit_codes.SETUP_ERROR.value)
             args = json.loads(rep[2][1:]) # parse args json, skip comment #
             # process features
             features =   ['binfmt_misc',  'cgroups',  'close_fds',  'devlink_pci',  'ieee802154',  'net_dev',
@@ -149,7 +166,7 @@ def main():
         '/share/bzImage',
     ]
     print('Running QEMU with command: ' + ' '.join(qemu_command))
-    boot_timeout = threading.Timer(120, timeout, [1])
+    boot_timeout = threading.Timer(120, timeout, [exit_codes.BOOT_FAIL.value]) # 120 seconds to boot
     boot_timeout.start() # boot timer
     qemu_proc = subprocess.Popen(qemu_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
     waitForText(qemu_proc, ['syzkaller ttyS0'])
@@ -162,17 +179,27 @@ def main():
     qemu_proc.stdin.write(b'\n')
     qemu_proc.stdin.flush()
     waitForText(qemu_proc, ['root@syzkaller:~#'])
-    subprocess.run('scp -r -P 10021 -o StrictHostKeyChecking=no -i /share/key /root/ root@localhost:/'.split(' '), check=True, stderr=subprocess.STDOUT)
+    scp_proc = subprocess.run('scp -r -P 10021 -o StrictHostKeyChecking=no -i /share/key /root/ root@localhost:/'.split(' '), stderr=subprocess.STDOUT)
+    if scp_proc.returncode != 0:
+        print('Failed to copy files to QEMU')
+        os._exit(exit_codes.SETUP_ERROR.value)
     qemu_proc.stdin.write(b'ls\n')
     qemu_proc.stdin.flush()
     boot_timeout.cancel() # stop boot timer
-    threading.Timer(timeout_sec, timeout).start() # start poc timer
+    threading.Timer(timeout_sec, timeout, [exit_codes.TIMEOUT.value]).start() # start poc timer
     qemu_proc.stdin.write(f'{exec_cmd}\n'.encode('utf-8'))
     qemu_proc.stdin.flush()
     while found := waitForText(qemu_proc, ['root@syzkaller:~#', 'BUG: ']):
         if found == 2:
+            # print bug
+            end_time = time.time() + 5
+            while time.time() < end_time:
+                line = qemu_proc.stdout.readline().decode('utf-8', errors='replace')
+                if not line:
+                    break
+                print(line, end='')
             print('BUG found')
-            os._exit(1)
+            os._exit(exit_codes.SANITIZER_TRIGGER.value)
         qemu_proc.stdin.write(f'{exec_cmd}\n'.encode('utf-8'))
         qemu_proc.stdin.flush()
 

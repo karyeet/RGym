@@ -71,7 +71,7 @@ webServer.createPostRoute(
 webServer.createPostRoute('/start', JobIDSchema, (data: _JobIDSchema) => {
   const job = manager.getJob(data.jobid);
   if (job) {
-    if (!job.isStarted()) {
+    if (!job.isRunning() && job.getStartedTimestamp() < 0) {
       job.start();
       return true;
     } else {
@@ -82,31 +82,21 @@ webServer.createPostRoute('/start', JobIDSchema, (data: _JobIDSchema) => {
   }
 });
 
-webServer.createGetRoute('/isSuccess', JobIDSchema, (param: _JobIDSchema) => {
+webServer.createGetRoute('/getExitCode', JobIDSchema, (param: _JobIDSchema) => {
   const jobid = param.jobid;
   const job = manager.getJob(jobid);
   if (job) {
-    return job.isSuccess();
+    return job.getExitCode();
   } else {
     return 'Job not found';
   }
 });
 
-webServer.createGetRoute('/isComplete', JobIDSchema, (param: _JobIDSchema) => {
+webServer.createGetRoute('/isRunning', JobIDSchema, (param: _JobIDSchema) => {
   const jobid = param.jobid;
   const job = manager.getJob(jobid);
   if (job) {
-    return job.isComplete();
-  } else {
-    return 'Job not found';
-  }
-});
-
-webServer.createGetRoute('/isStarted', JobIDSchema, (param: _JobIDSchema) => {
-  const jobid = param.jobid;
-  const job = manager.getJob(jobid);
-  if (job) {
-    return job.isStarted();
+    return job.isRunning();
   } else {
     return 'Job not found';
   }

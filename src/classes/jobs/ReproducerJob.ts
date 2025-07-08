@@ -31,9 +31,9 @@ class ReproducerJob extends Job {
       jobid,
       jobPath: path.join(dataPath, String(jobid)),
       options,
-      started: false,
-      success: false,
-      complete: false,
+      started_at: -1,
+      running: false,
+      exitCode: -1,
       type: type,
     };
     if (!existsSync(new_state.jobPath)) {
@@ -44,9 +44,10 @@ class ReproducerJob extends Job {
   }
 
   start(): boolean {
-    if (this.started) {
+    if (this.running) {
       return false;
     }
+    super._start();
     //--device=/dev/kvm
     const options = this.options as ReproducerOptions;
     //qemu-system-x86_64 -m 2G -smp 2,sockets=2,cores=1 -drive file=$DISK_IMAGE,format=raw -net nic,model=e1000 -net user,host=10.0.2.10,hostfwd=tcp::10022-:22 -enable-kvm -nographic -snapshot -machine pc-q35-7.1
@@ -88,17 +89,15 @@ class ReproducerJob extends Job {
     process.stdout.pipe(this.logStream, {end: false});
     process.stderr.pipe(this.logStream, {end: false});
 
-    this.started = true;
     this.saveState();
 
-    process.on('exit', (code, _) => {
-      this.complete = true;
-      this.success = code === 0;
+    process.on('exit', (code: number) => {
+      this.running = false;
+      this.exitCode = code;
       this.logStream.end();
-      this.started = false;
       this.saveState();
       console.log('Reproducer exited with code', code);
-      this.emit(JobEvents.COMPLETE);
+      this.emit(JobEvents.EXITED);
     });
     return true;
   }

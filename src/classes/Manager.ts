@@ -55,19 +55,19 @@ class Manager {
     }
   }
 
-  isJobComplete(jobid: number): boolean {
+  isJobRunning(jobid: number): boolean {
     const job = this.jobs.find(job => job.jobid === jobid);
     if (job) {
-      return job.isComplete();
+      return job.isRunning();
     } else {
       throw new Error('Job not found');
     }
   }
 
-  isJobSuccess(jobid: number): boolean {
+  getExitCode(jobid: number): number {
     const job = this.jobs.find(job => job.jobid === jobid);
     if (job) {
-      return job.isSuccess();
+      return job.getExitCode();
     } else {
       throw new Error('Job not found');
     }
