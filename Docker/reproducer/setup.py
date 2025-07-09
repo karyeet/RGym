@@ -7,7 +7,7 @@ import threading
 import json
 import enum
 import time
-
+import select
 class exit_codes(enum.Enum):
     TIMEOUT = 0
     SANITIZER_TRIGGER = 1
@@ -23,17 +23,12 @@ def timeout(code=0):
     print('Timeout')
     os._exit(code)
 
-lines_buffer = []
 def waitForText(process, strings): # these arguments were supposed to be temporary but the bug doesnt trigger when i change them (?_?)
     while exit_code := process.poll() is None:
-        line = process.stdout.readline().decode('utf-8')
+        line = process.stdout.readline()
         print(line, end='')
-        lines_buffer.append(line)
-        if(len(lines_buffer) > 5):
-            lines_buffer.pop(0) # keep only last 5 lines
-        combined_lines = ''.join(lines_buffer)
         for text in strings:
-            if text in combined_lines:
+            if text in line:
                 return strings.index(text)+1
     # qemu process is dead
     print(f'QEMU exited with {exit_code}')
@@ -173,39 +168,41 @@ def main():
     print('Running QEMU with command: ' + ' '.join(qemu_command))
     boot_timeout = threading.Timer(180, timeout, [exit_codes.BOOT_FAIL.value]) # 180 seconds to boot
     boot_timeout.start() # boot timer
-    qemu_proc = subprocess.Popen(qemu_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
+    qemu_proc = subprocess.Popen(qemu_command, bufsize=1, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, stdin=subprocess.PIPE)
     waitForText(qemu_proc, ['syzkaller ttyS0'])
-    qemu_proc.stdin.write(b'\n')
+    qemu_proc.stdin.write('\n')
     qemu_proc.stdin.flush()
     waitForText(qemu_proc, ['syzkaller login:'])
-    qemu_proc.stdin.write(b'root\n')
+    qemu_proc.stdin.write('root\n')
     qemu_proc.stdin.flush()
     waitForText(qemu_proc, ['permitted by applicable law.'])
-    qemu_proc.stdin.write(b'\n')
+    qemu_proc.stdin.write('\n')
     qemu_proc.stdin.flush()
     waitForText(qemu_proc, ['root@syzkaller:~#'])
     scp_proc = subprocess.run('scp -r -P 10021 -o StrictHostKeyChecking=no -i /share/key /root/ root@localhost:/'.split(' '), stderr=subprocess.STDOUT)
     if scp_proc.returncode != 0:
         print('Failed to copy files to QEMU')
         os._exit(exit_codes.SETUP_ERROR.value)
-    qemu_proc.stdin.write(b'ls\n')
+    qemu_proc.stdin.write('ls\n')
     qemu_proc.stdin.flush()
     boot_timeout.cancel() # stop boot timer
     threading.Timer(timeout_sec, timeout, [exit_codes.TIMEOUT.value]).start() # start poc timer
-    qemu_proc.stdin.write(f'{exec_cmd}\n'.encode('utf-8'))
+    qemu_proc.stdin.write(f'{exec_cmd}\n')
     qemu_proc.stdin.flush()
     while found := waitForText(qemu_proc, ['root@syzkaller:~#', 'BUG: ']):
         if found == 2:
             # print bug
             end_time = time.time() + 5
             while time.time() < end_time:
-                line = qemu_proc.stdout.readline().decode('utf-8', errors='replace')
-                if not line:
-                    break
-                print(line, end='')
+                ready, _, _ = select.select([qemu_proc.stdout], [], [], 0.2)
+                if ready:
+                    line = qemu_proc.stdout.readline()
+                    if not line:
+                        break
+                    print(line, end='')
             print('BUG found')
             os._exit(exit_codes.SANITIZER_TRIGGER.value)
-        qemu_proc.stdin.write(f'{exec_cmd}\n'.encode('utf-8'))
+        qemu_proc.stdin.write(f'{exec_cmd}\n')
         qemu_proc.stdin.flush()
 
 

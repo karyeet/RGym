@@ -6,7 +6,7 @@ import os
 port = 7070
 
 # Exit code reported by run script of job.
-def get_exit_code(jobid: str) -> bool:
+def get_exit_code(jobid: str) -> int:
     endpoint = "getExitCode"
     response = requests.get(f'http://localhost:{port}/{endpoint}?jobid={jobid}')
     return response.json()
@@ -220,7 +220,7 @@ def addReproduceJob(bzImageJobId: str,
 """
 Wait for job to complete, blocking, return exit code.
 """
-def waitForJob(jobid: str) -> bool:
+def waitForJob(jobid: str) -> int:
     while is_running(jobid):
         time.sleep(4)
     return get_exit_code(jobid)
