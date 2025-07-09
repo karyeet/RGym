@@ -23,12 +23,17 @@ def timeout(code=0):
     print('Timeout')
     os._exit(code)
 
+lines_buffer = []
 def waitForText(process, strings): # these arguments were supposed to be temporary but the bug doesnt trigger when i change them (?_?)
     while exit_code := process.poll() is None:
         line = process.stdout.readline().decode('utf-8')
         print(line, end='')
+        lines_buffer.append(line)
+        if(len(lines_buffer) > 5):
+            lines_buffer.pop(0) # keep only last 5 lines
+        combined_lines = ''.join(lines_buffer)
         for text in strings:
-            if text in line:
+            if text in combined_lines:
                 return strings.index(text)+1
     # qemu process is dead
     print(f'QEMU exited with {exit_code}')
