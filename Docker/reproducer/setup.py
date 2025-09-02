@@ -152,7 +152,7 @@ def main():
         '-drive',
         'file=/share/rootfs,format=raw',
         '-append',
-        '"rootfstype=ext4 scsi_mod.scan=sync console=ttyS0 root=/dev/sda rootwait earlyprintk=serial net.ifnames=0 nokaslr"',
+        'rootfstype=ext4 scsi_mod.scan=sync console=ttyS0 root=/dev/sda rootwait earlyprintk=serial net.ifnames=0 nokaslr',
         '-net',
         'nic,model=e1000',
         '-net',
