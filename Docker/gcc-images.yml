@@ -1,4 +1,28 @@
 services:
+  gcc-5:
+    image: gcc-5
+    build:
+      context: ./build-kernel
+      dockerfile: ./Build.Dockerfile
+      args:
+        CC_BASE_IMAGE: gcc
+        CC_IMAGE_VERSION: 5
+  gcc-6:
+    image: gcc-6
+    build:
+      context: ./build-kernel
+      dockerfile: ./Build.Dockerfile
+      args:
+        CC_BASE_IMAGE: gcc
+        CC_IMAGE_VERSION: 6
+  gcc-7:
+    image: gcc-7
+    build:
+      context: ./build-kernel
+      dockerfile: ./Build.Dockerfile
+      args:
+        CC_BASE_IMAGE: gcc
+        CC_IMAGE_VERSION: 7
   gcc-8:
     image: gcc-8
     build:
@@ -23,6 +47,14 @@ services:
       args:
         CC_BASE_IMAGE: gcc
         CC_IMAGE_VERSION: 10
+  gcc-11:
+    image: gcc-11
+    build:
+      context: ./build-kernel
+      dockerfile: ./Build.Dockerfile
+      args:
+        CC_BASE_IMAGE: gcc
+        CC_IMAGE_VERSION: 11
   gcc-12:
     image: gcc-12
     build:

@@ -23,6 +23,14 @@ services:
       args:
         CC_BASE_IMAGE: silkeh/clang
         CC_IMAGE_VERSION: 11
+  clang-12:
+    image: clang-12
+    build:
+      context: ./build-kernel
+      dockerfile: ./Build.Dockerfile
+      args:
+        CC_BASE_IMAGE: silkeh/clang
+        CC_IMAGE_VERSION: 12
   clang-13:
     image: clang-13
     build:
@@ -31,6 +39,14 @@ services:
       args:
         CC_BASE_IMAGE: silkeh/clang
         CC_IMAGE_VERSION: 13
+  clang-14:
+    image: clang-14
+    build:
+      context: ./build-kernel
+      dockerfile: ./Build.Dockerfile
+      args:
+        CC_BASE_IMAGE: silkeh/clang
+        CC_IMAGE_VERSION: 14
   clang-15:
     image: clang-15
     build:
