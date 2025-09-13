@@ -1,43 +1,99 @@
 name: Build and Push Docker Images
 
 on:
-  #push:
-  #  branches:
-  #    - main
+  push:
+    branches: [ main, older-compiler-support ]
   workflow_dispatch:
 
 jobs:
-  build:
+  build-gcc:
+    name: GCC ${{ matrix.version }}
     runs-on: ubuntu-latest
-
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [ 6, 7, 8, 9, 10, 11, 12 ]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v1
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push GCC images
-        run: |
-          for version in 6 7 8 9 10 11 12; do
-            docker-compose -f docker-compose.yml build gcc-$version
-            docker tag gcc-$version ${{ secrets.DOCKER_USERNAME }}/RGym:gcc-$version
-            docker push ${{ secrets.DOCKER_USERNAME }}/RGym:gcc-$version
-          done
+      - name: Build & push gcc-${{ matrix.version }}
+        uses: docker/bake-action@v5
+        with:
+          workdir: Docker
+          files: |
+            docker-compose.yml
+            gcc-images.yml
+            clang-images.yml
+          targets: gcc-${{ matrix.version }}
+          push: true
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
+            gcc-${{ matrix.version }}.tags=${{ secrets.DOCKER_USERNAME }}/rgym:gcc-${{ matrix.version }}
 
-      - name: Build and push clang images
-        run: |
-          for version in 9 10 11 12 13 14 15; do
-            docker-compose -f docker-compose.yml build clang-$version
-            docker tag clang-$version ${{ secrets.DOCKER_USERNAME }}/RGym:clang-$version
-            docker push ${{ secrets.DOCKER_USERNAME }}/RGym:clang-$version
-          done
+  build-clang:
+    name: Clang ${{ matrix.version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        version: [ 9, 10, 11, 12, 13, 14, 15 ]
+    steps:
+      - uses: actions/checkout@v4
 
-      - name: Build and push Reproducer image
-        run: |
-          docker-compose -f docker-compose.yml build reproducer
-          docker tag reproducer ${{ secrets.DOCKER_USERNAME }}/RGym:reproducer
-          docker push ${{ secrets.DOCKER_USERNAME }}/RGym:reproducer
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build & push clang-${{ matrix.version }}
+        uses: docker/bake-action@v5
+        with:
+          workdir: Docker
+          files: |
+            docker-compose.yml
+            gcc-images.yml
+            clang-images.yml
+          targets: clang-${{ matrix.version }}
+          push: true
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
+            clang-${{ matrix.version }}.tags=${{ secrets.DOCKER_USERNAME }}/rgym:clang-${{ matrix.version }}
+
+  build-reproducer:
+    name: Reproducer
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build & push reproducer
+        uses: docker/bake-action@v5
+        with:
+          workdir: Docker
+          files: |
+            docker-compose.yml
+            gcc-images.yml
+            clang-images.yml
+          targets: reproducer
+          push: true
+          set: |
+            *.cache-from=type=gha
+            *.cache-to=type=gha,mode=max
+            reproducer.tags=${{ secrets.DOCKER_USERNAME }}/rgym:reproducer
