@@ -1,6 +1,6 @@
 services:
   gcc-5:
-    image: gcc-5
+    image: karyeet/rgym:gcc-5
     build:
       context: ./build-kernel
       dockerfile: ./Build.Dockerfile
@@ -8,7 +8,7 @@ services:
         CC_BASE_IMAGE: gcc
         CC_IMAGE_VERSION: 5
   gcc-6:
-    image: gcc-6
+    image: karyeet/rgym:gcc-6
     build:
       context: ./build-kernel
       dockerfile: ./Build.Dockerfile
@@ -16,7 +16,7 @@ services:
         CC_BASE_IMAGE: gcc
         CC_IMAGE_VERSION: 6
   gcc-7:
-    image: gcc-7
+    image: karyeet/rgym:gcc-7
     build:
       context: ./build-kernel
       dockerfile: ./Build.Dockerfile
@@ -24,7 +24,7 @@ services:
         CC_BASE_IMAGE: gcc
         CC_IMAGE_VERSION: 7
   gcc-8:
-    image: gcc-8
+    image: karyeet/rgym:gcc-8
     build:
       context: ./build-kernel
       dockerfile: ./Build.Dockerfile
@@ -32,7 +32,7 @@ services:
         CC_BASE_IMAGE: gcc
         CC_IMAGE_VERSION: 8
   gcc-9:
-    image: gcc-9
+    image: karyeet/rgym:gcc-9
     build:
       context: ./build-kernel
       dockerfile: ./Build.Dockerfile
@@ -40,7 +40,7 @@ services:
         CC_BASE_IMAGE: gcc
         CC_IMAGE_VERSION: 9
   gcc-10:
-    image: gcc-10
+    image: karyeet/rgym:gcc-10
     build:
       context: ./build-kernel
       dockerfile: ./Build.Dockerfile
@@ -48,7 +48,7 @@ services:
         CC_BASE_IMAGE: gcc
         CC_IMAGE_VERSION: 10
   gcc-11:
-    image: gcc-11
+    image: karyeet/rgym:gcc-11
     build:
       context: ./build-kernel
       dockerfile: ./Build.Dockerfile
@@ -56,7 +56,7 @@ services:
         CC_BASE_IMAGE: gcc
         CC_IMAGE_VERSION: 11
   gcc-12:
-    image: gcc-12
+    image: karyeet/rgym:gcc-12
     build:
       context: ./build-kernel
       dockerfile: ./Build.Dockerfile

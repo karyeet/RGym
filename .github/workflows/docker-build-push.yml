@@ -38,7 +38,6 @@ jobs:
           set: |
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
-            gcc-${{ matrix.version }}.tags=${{ secrets.DOCKER_USERNAME }}/rgym:gcc-${{ matrix.version }}
 
   build-clang:
     name: Clang ${{ matrix.version }}
@@ -70,7 +69,6 @@ jobs:
           set: |
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
-            clang-${{ matrix.version }}.tags=${{ secrets.DOCKER_USERNAME }}/rgym:clang-${{ matrix.version }}
 
   build-reproducer:
     name: Reproducer
@@ -98,4 +96,3 @@ jobs:
           set: |
             *.cache-from=type=gha
             *.cache-to=type=gha,mode=max
-            reproducer.tags=${{ secrets.DOCKER_USERNAME }}/rgym:reproducer
