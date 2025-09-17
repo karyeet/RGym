@@ -85,4 +85,4 @@ RUN git config --global --add safe.directory '*'
 RUN mkdir /share
 
 #CMD ["/setup.py"]
-ENTRYPOINT ["/setup.py"]
+ENTRYPOINT ["/usr/local/bin/python3.10", "/setup.py"]
