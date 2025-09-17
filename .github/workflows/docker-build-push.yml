@@ -4,7 +4,8 @@ on:
   push:
     branches: [ main, older-compiler-support ]
     paths:
-      - 'Docker/**' 
+      - 'Docker/**'
+      - '.github/workflows/docker-build-push.yml'
   workflow_dispatch:
 
 jobs:
