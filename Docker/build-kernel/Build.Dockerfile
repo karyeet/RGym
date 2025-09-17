@@ -56,7 +56,7 @@ RUN set -eux; \
     fi \
     # install required packages
     && apt-get update \
-    && apt-get install --no-install-recommends -y software-properties-common $gpg_pkgs make bison flex libelf-dev libssl-dev bc git openssl findutils ca-certificates wget build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libreadline-dev libffi-dev \
+    && apt-get install --no-install-recommends -y software-properties-common $gpg_pkgs make bsdmainutils bison flex libelf-dev libssl-dev bc git openssl findutils ca-certificates wget build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libreadline-dev libffi-dev \
     && apt-get clean \ 
     && rm -rf /var/lib/apt/lists/*
 
