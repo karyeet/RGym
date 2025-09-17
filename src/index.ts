@@ -15,6 +15,7 @@ interface _config {
   data_path: string;
   rootfs_path: string;
   sshkey_path: string;
+  docker_images: {[key: string]: string};
 }
 
 // eslint-disable-next-line n/no-unpublished-require
@@ -38,6 +39,8 @@ webServer.createPostRoute(
       timeout: data.timeout,
       compiler: data.compiler,
       compilerMajorVersion: data.compilerMajorVersion,
+      docker_image:
+        config.docker_images[`${data.compiler}-${data.compilerMajorVersion}`],
     };
     const new_job = BuildJob.newJob(job_id, options, config.data_path);
     manager.addJob(new_job);
@@ -61,6 +64,7 @@ webServer.createPostRoute(
       metadata: data.metadata,
       timeout: data.timeout,
       reproducerType: data.reproducerType,
+      docker_image: config.docker_images['reproducer'],
     };
     const new_job = ReproducerJob.newJob(job_id, options, config.data_path);
     manager.addJob(new_job);

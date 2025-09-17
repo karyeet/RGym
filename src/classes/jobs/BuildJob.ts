@@ -19,6 +19,7 @@ interface BuildOptions extends JobOptions {
   patch: string;
   compiler: Compilers;
   compilerMajorVersion: number;
+  docker_image: string;
 }
 
 class BuildJob extends Job {
@@ -63,7 +64,7 @@ class BuildJob extends Job {
       `${path.join(this.jobPath, '..', 'gitcache')}:/root/.gitcache`,
       '-v',
       `${this.jobPath}:/share`,
-      `${options.compiler}-${options.compilerMajorVersion}`,
+      options.docker_image,
       options.git_hash, // git hash
       options.git_repo, // git repo
       String(options.cores), // cores
