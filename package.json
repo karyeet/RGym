@@ -12,7 +12,7 @@
     "pretest": "npm run compile",
     "posttest": "npm run lint",
     "start": "node build/src/index.js",
-    "build": "npm run compile && docker compose build"
+    "build": "npm run compile && docker compose pull"
   },
   "repository": {
     "type": "git",

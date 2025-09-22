@@ -1,6 +1,6 @@
 services:
   clang-9:
-    image: clang-9
+    image: karyeet/rgym:clang-9
     build:
       context: ./build-kernel
       dockerfile: ./Build.Dockerfile
@@ -8,7 +8,7 @@ services:
         CC_BASE_IMAGE: silkeh/clang
         CC_IMAGE_VERSION: 9
   clang-10:
-    image: clang-10
+    image: karyeet/rgym:clang-10
     build:
       context: ./build-kernel
       dockerfile: ./Build.Dockerfile
@@ -16,23 +16,39 @@ services:
         CC_BASE_IMAGE: silkeh/clang
         CC_IMAGE_VERSION: 10
   clang-11:
-    image: clang-11
+    image: karyeet/rgym:clang-11
     build:
       context: ./build-kernel
       dockerfile: ./Build.Dockerfile
       args:
         CC_BASE_IMAGE: silkeh/clang
         CC_IMAGE_VERSION: 11
+  clang-12:
+    image: karyeet/rgym:clang-12
+    build:
+      context: ./build-kernel
+      dockerfile: ./Build.Dockerfile
+      args:
+        CC_BASE_IMAGE: silkeh/clang
+        CC_IMAGE_VERSION: 12
   clang-13:
-    image: clang-13
+    image: karyeet/rgym:clang-13
     build:
       context: ./build-kernel
       dockerfile: ./Build.Dockerfile
       args:
         CC_BASE_IMAGE: silkeh/clang
         CC_IMAGE_VERSION: 13
+  clang-14:
+    image: karyeet/rgym:clang-14
+    build:
+      context: ./build-kernel
+      dockerfile: ./Build.Dockerfile
+      args:
+        CC_BASE_IMAGE: silkeh/clang
+        CC_IMAGE_VERSION: 14
   clang-15:
-    image: clang-15
+    image: karyeet/rgym:clang-15
     build:
       context: ./build-kernel
       dockerfile: ./Build.Dockerfile

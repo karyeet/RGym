@@ -10,6 +10,7 @@ interface ReproducerOptions extends JobOptions {
   reproducer: string;
   reproducerType: ReproducerType;
   sshkeyPath: string;
+  docker_image: string;
 }
 
 enum ReproducerType {
@@ -63,7 +64,7 @@ class ReproducerJob extends Job {
       `${options.sshkeyPath}:/share/key:ro`,
       '-v',
       `${path.join(this.jobPath, '..', options.bzImageJobId, 'bzImage')}:/share/bzImage:ro`,
-      'reproducer',
+      options.docker_image,
       String(options.memory), // memory
       String(options.cores), // cores
       String(options.timeout), // timeout

@@ -9,7 +9,7 @@ services:
 #      dockerfile: ./Dummy.Dockerfile
 
   reproducer:
-    image: reproducer
+    image: karyeet/rgym:reproducer
     build:
       context: ./reproducer
       dockerfile: ./Reproduce.Dockerfile
