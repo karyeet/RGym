@@ -55,4 +55,11 @@ services:
       args:
         CC_BASE_IMAGE: silkeh/clang
         CC_IMAGE_VERSION: 15
-
+  clang-20:
+    image: karyeet/rgym:clang-20
+    build:
+      context: ./build-kernel
+      dockerfile: ./Build.Dockerfile
+      args:
+        CC_BASE_IMAGE: silkeh/clang
+        CC_IMAGE_VERSION: 20

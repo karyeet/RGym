@@ -34,7 +34,26 @@ Example:
 {
     "data_path": "/home/ks/RGym/data",
     "rootfs_path": "/home/ks/RGym/syzkallerimage/bullseye.img",
-    "sshkey_path": "/home/ks/RGym/syzkallerimage/bullseye.id_rsa"
+    "sshkey_path": "/home/ks/RGym/syzkallerimage/bullseye.id_rsa",
+    "docker_images": {
+        "gcc-5": "karyeet/rgym:gcc-5",
+        "gcc-6": "karyeet/rgym:gcc-6",
+        "gcc-7": "karyeet/rgym:gcc-7",
+        "gcc-8": "karyeet/rgym:gcc-8",
+        "gcc-9": "karyeet/rgym:gcc-9",
+        "gcc-10": "karyeet/rgym:gcc-10",
+        "gcc-11": "karyeet/rgym:gcc-11",
+        "gcc-12": "karyeet/rgym:gcc-12",
+        "clang-9": "karyeet/rgym:clang-9",
+        "clang-10": "karyeet/rgym:clang-10",
+        "clang-11": "karyeet/rgym:clang-11",
+        "clang-12": "karyeet/rgym:clang-12",
+        "clang-13": "karyeet/rgym:clang-13",
+        "clang-14": "karyeet/rgym:clang-14",
+        "clang-15": "karyeet/rgym:clang-15",
+        "clang-20": "karyeet/rgym:clang-20",
+        "reproducer": "karyeet/rgym:reproducer"
+    }
 }
 ```
 ### Start
@@ -64,14 +83,14 @@ Added jobs are not automatically started and must be started by a seperate call.
 
 ### Build Images
 The **build images** are only built with some compilers by default, the following are built:
-- clang 9,10,11,13,15
-- gcc 8,9,10,12
+- clang 9 - 15, 20
+- gcc 5 - 12
 
-You may add more in the [gcc compose](https://github.com/karyeet/RGym/blob/main/Docker/gcc-images.yml) or the [clang compose](https://github.com/karyeet/RGym/blob/main/Docker/clang-images.yml) and rerun `npm run build`.
+You may add more in the [gcc compose](https://github.com/karyeet/RGym/blob/main/Docker/gcc-images.yml) or the [clang compose](https://github.com/karyeet/RGym/blob/main/Docker/clang-images.yml) and run `sudo docker compose build`.
 
 The images can be used outside of RGym by overriding the entrypoint. Ex:
 
-`sudo docker run -it --rm --entrypoint=bash clang-10`
+`sudo docker run -it --rm --entrypoint=bash karyeet/rgym:clang-10`
 
 ### Compiler mapping
 Some .configs do not have the compiler listed, for convenience a [mapping](https://github.com/karyeet/RGym/blob/main/RCompose/compiler_mapping.json) is provided based off syzbot, along with a script to generate it based off .configs. The mapping can be used and generated (even without RGym running) using the `pick_compiler_version` function in [rcompose.py](https://github.com/karyeet/RGym/blob/3f1956c2cf04bf0b2b1ac356c38df560b3ae6925/RCompose/rcompose.py#L116)
