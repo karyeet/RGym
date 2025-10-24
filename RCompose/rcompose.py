@@ -49,6 +49,21 @@ def parse_compiler_string(compiler_str: str) -> dict:
     else:
         raise ValueError("Invalid compiler string format")
 
+# choose a compiler based on the config (either infer from kernel version or use config specified)
+# return in format 'gcc-5' or 'clang-12'
+def get_compiler(config_file_contents, compiler_mapping) -> dict:
+    compiler_string = read_full_compiler(config_file_contents)
+    if compiler_string != None:
+        compiler = parse_compiler_string(compiler_string)
+        return f"{compiler['type']}-{compiler['major']}"
+    else:
+        kernel_version = get_kernel_version(config_file_contents)
+        kernel_version_str = '.'.join([kernel_version['major'],kernel_version['minor'],kernel_version['patch']])
+        compiler_to_use = pick_compiler_version(kernel_version_str, compiler_mapping)
+        compiler_type = compiler_to_use.split(' ')[0]
+        compiler_version = compiler_to_use.split(' ')[1]
+        return f'{compiler_type}-{compiler_version}'
+
 """
 Extract kernel version from the .config file contents, expected format in .config:
 # Linux/arm 6.12.0-rc1 Kernel Configuration
